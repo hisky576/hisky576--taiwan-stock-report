@@ -483,6 +483,7 @@
   <div class="nav-tab" onclick="switchTab('institutional')">🏦 法人動向</div>
   <div class="nav-tab" onclick="switchTab('stocks')">📈 重點個股</div>
   <div class="nav-tab" onclick="switchTab('opinion')">💬 分析師觀點</div>
+  <div class="nav-tab" onclick="switchTab('history')">📈 十日趨勢</div>
 </nav>
 
 <main>
@@ -1005,6 +1006,46 @@
 
   </div>
 
+  <!-- ═══════════ HISTORY ═══════════ -->
+  <div class="section" id="section-history">
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#dbeafe">📊</div>
+        近十日市場演變
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+        <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0">
+          <div style="font-size:13px;color:#64748b;font-weight:600;margin-bottom:12px">指數 vs 法人買賣超</div>
+          <div class="chart-wrap" style="height:300px">
+            <canvas id="historyChart"></canvas>
+          </div>
+        </div>
+        <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0">
+          <div style="font-size:13px;color:#64748b;font-weight:600;margin-bottom:12px">市場情緒演變</div>
+          <div class="chart-wrap" style="height:300px">
+            <canvas id="sentimentHistoryChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0;overflow-x:auto">
+        <div style="font-size:13px;color:#64748b;font-weight:600;margin-bottom:12px">十日詳細數據</div>
+        <table class="data-table" style="font-size:12px">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>指數</th>
+              <th>漲跌%</th>
+              <th>外資(億)</th>
+              <th>投信(億)</th>
+              <th>重點事件</th>
+            </tr>
+          </thead>
+          <tbody id="historyTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <footer>
@@ -1235,6 +1276,118 @@ new Chart(document.getElementById('weeklyChart'), {
       },
       x: { grid: { display: false } }
     }
+  }
+});
+
+// ── History Data ──
+const historyData = [
+  { date: '04/17', index: 36720, chg: 1.20, foreign: 310, trust: 28, event: '台積電財報創五新高' },
+  { date: '04/20', index: 36958, chg: 0.65, foreign: 240, trust: 20, event: '盤中攻上37344點新高' },
+  { date: '04/21', index: 38440, chg: 4.01, foreign: 820, trust: 45, event: '股王股后帶頭衝，大漲逾1500點' },
+  { date: '04/22', index: 38663, chg: 0.58, foreign: 155, trust: 12.4, event: '站穩38000點關卡' },
+  { date: '04/23', index: 39108, chg: 1.15, foreign: 340, trust: 30.2, event: '科技股大漲，美股財報激勵' },
+  { date: '04/24', index: 39025, chg: -0.21, foreign: -85, trust: 25, event: '震盪洗盤，融資餘額續增' },
+  { date: '04/27', index: 39345, chg: 0.82, foreign: 210, trust: 18.5, event: 'AI權值股領軍，市場情緒樂觀' },
+  { date: '04/28', index: 39522, chg: 0.45, foreign: 120, trust: 22, event: '指數再創收盤歷史新高' },
+  { date: '04/29', index: 39303, chg: -0.55, foreign: -161, trust: 15.2, event: '高檔震盪，外資轉賣' },
+  { date: '04/30', index: 38926, chg: -0.96, foreign: -535, trust: 11.8, event: '獲利了結，外資連4賣' }
+];
+
+// Populate History Table
+const historyTableBody = document.getElementById('historyTable');
+historyData.forEach((row, idx) => {
+  const tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid #e2e8f0';
+  if (idx % 2 === 0) tr.style.background = '#ffffff';
+  tr.innerHTML = `
+    <td style="padding:8px;font-weight:600">${row.date}</td>
+    <td style="padding:8px;text-align:right">${row.index.toLocaleString()}</td>
+    <td style="padding:8px;text-align:right;color:${row.chg >= 0 ? '#dc2626' : '#16a34a'};font-weight:600">${row.chg >= 0 ? '+' : ''}${row.chg.toFixed(2)}%</td>
+    <td style="padding:8px;text-align:right;color:${row.foreign >= 0 ? '#dc2626' : '#16a34a'};font-weight:600">${row.foreign >= 0 ? '+' : ''}${row.foreign.toFixed(0)}</td>
+    <td style="padding:8px;text-align:right;color:${row.trust >= 0 ? '#dc2626' : '#16a34a'};font-weight:600">${row.trust >= 0 ? '+' : ''}${row.trust.toFixed(1)}</td>
+    <td style="padding:8px;font-size:11px;color:#64748b">${row.event}</td>
+  `;
+  historyTableBody.appendChild(tr);
+});
+
+// History Trend Chart
+const historyCtx = document.getElementById('historyChart').getContext('2d');
+new Chart(historyCtx, {
+  type: 'line',
+  data: {
+    labels: historyData.map(d => d.date),
+    datasets: [
+      {
+        label: '加權指數',
+        data: historyData.map(d => d.index),
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.05)',
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#2563eb',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        yAxisID: 'y'
+      },
+      {
+        label: '外資買賣超',
+        data: historyData.map(d => d.foreign),
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245, 158, 11, 0.05)',
+        borderWidth: 2,
+        fill: false,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#f59e0b',
+        yAxisID: 'y1'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: true, position: 'top' } },
+    scales: {
+      y: { type: 'linear', display: true, position: 'left', title: { display: true, text: '指數點數' } },
+      y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: '法人買賣超(億)' }, grid: { drawOnChartArea: false } }
+    }
+  }
+});
+
+// Sentiment History Chart
+const sentimentHistoryCtx = document.getElementById('sentimentHistoryChart').getContext('2d');
+const sentimentHistory = [
+  { date: '04/17', basic: 75, chip: 70, tech: 80, fund: 75, theme: 85 },
+  { date: '04/20', basic: 78, chip: 72, tech: 82, fund: 76, theme: 86 },
+  { date: '04/21', basic: 85, chip: 80, tech: 88, fund: 82, theme: 90 },
+  { date: '04/22', basic: 83, chip: 78, tech: 85, fund: 80, theme: 88 },
+  { date: '04/23', basic: 84, chip: 75, tech: 86, fund: 78, theme: 87 },
+  { date: '04/24', basic: 80, chip: 60, tech: 82, fund: 65, theme: 85 },
+  { date: '04/27', basic: 82, chip: 65, tech: 84, fund: 70, theme: 86 },
+  { date: '04/28', basic: 82, chip: 50, tech: 80, fund: 60, theme: 85 },
+  { date: '04/29', basic: 75, chip: 35, tech: 70, fund: 45, theme: 75 },
+  { date: '04/30', basic: 82, chip: 30, tech: 45, fund: 60, theme: 75 }
+];
+new Chart(sentimentHistoryCtx, {
+  type: 'line',
+  data: {
+    labels: sentimentHistory.map(d => d.date),
+    datasets: [
+      { label: '基本面', data: sentimentHistory.map(d => d.basic), borderColor: '#10b981', borderWidth: 2, tension: 0.4, fill: false },
+      { label: '籌碼面', data: sentimentHistory.map(d => d.chip), borderColor: '#ef4444', borderWidth: 2, tension: 0.4, fill: false },
+      { label: '技術面', data: sentimentHistory.map(d => d.tech), borderColor: '#f59e0b', borderWidth: 2, tension: 0.4, fill: false },
+      { label: '資金面', data: sentimentHistory.map(d => d.fund), borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, fill: false },
+      { label: '題材面', data: sentimentHistory.map(d => d.theme), borderColor: '#8b5cf6', borderWidth: 2, tension: 0.4, fill: false }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: true, position: 'top' } },
+    scales: { y: { min: 0, max: 100, title: { display: true, text: '情緒評分 (0-100)' } } }
   }
 });
 
