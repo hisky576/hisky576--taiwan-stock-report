@@ -2,9 +2,9 @@ name: Update Taiwan Stock Report Daily
 
 on:
   schedule:
-    # Runs every day at 17:00 (5 PM) GMT+8
-    # Adjust cron expression if a different time is desired
-    - cron: '0 9 * * *' # 9 AM UTC is 5 PM GMT+8
+    # Runs every Monday to Friday at 17:00 (5 PM) GMT+8
+    # 9 AM UTC is 5 PM GMT+8. '1-5' means Monday through Friday.
+    - cron: '0 9 * * 1-5' 
   workflow_dispatch:
 
 jobs:
@@ -39,4 +39,4 @@ jobs:
         git commit -m "Daily update: Taiwan Stock Report for $(date +'%Y/%m/%d')" || echo "No changes to commit"
         git push
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is automatically provided by GitHub Actions for repository write access }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
