@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>台股每日利多利空統整報告 | 2026/05/01</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bull: #dc2626;
+      --bull-light: #fee2e2;
+      --bear: #16a34a;
+      --bear-light: #dcfce7;
+      --neutral: #2563eb;
+      --neutral-light: #dbeafe;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f4c81 100%);
+      color: #fff;
+      padding: 36px 24px 28px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    header h1 {
+      font-size: clamp(22px, 4vw, 34px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    header .subtitle {
+      font-size: 14px;
+      opacity: 0.75;
+      margin-bottom: 20px;
+    }
+    .index-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 24px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 14px 28px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .index-hero .val { font-size: 28px; font-weight: 800; }
+    .index-hero .chg { font-size: 16px; font-weight: 600; }
+    .index-hero .chg.up { color: #fca5a5; } /* 台股漲為紅 */
+    .index-hero .chg.down { color: #86efac; } /* 台股跌為綠 */
+    .index-hero .label { font-size: 12px; opacity: 0.65; }
+
+    /* ── Nav Tabs ── */
+    .nav-tabs {
+      display: flex;
+      gap: 0;
+      background: var(--card);
+      border-bottom: 2px solid var(--border);
+      overflow-x: auto;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .nav-tab {
+      padding: 14px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .nav-tab:hover { color: var(--neutral); }
+    .nav-tab.active { color: var(--neutral); border-bottom-color: var(--neutral); }
+
+    /* ── Main Layout ── */
+    main { max-width: 1200px; margin: 0 auto; padding: 28px 16px 60px; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title .icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    /* ── Summary Grid ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .stat-card .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .stat-value { font-size: 26px; font-weight: 800; }
+    .stat-card .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .stat-card.bull .stat-value { color: var(--bull); }
+    .stat-card.bear .stat-value { color: var(--bear); }
+    .stat-card.neutral .stat-value { color: var(--neutral); }
+
+    /* ── Sentiment Meter ── */
+    .sentiment-wrap {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .meter-container { flex: 1; min-width: 220px; }
+    .meter-label { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+    .meter-bar {
+      height: 16px;
+      border-radius: 8px;
+      background: var(--border);
+      overflow: hidden;
+      position: relative;
+    }
+    .meter-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: width 1s ease;
+    }
+    .meter-fill.bull { background: linear-gradient(90deg, #dc2626, #f87171); }
+    .meter-fill.bear { background: linear-gradient(90deg, #16a34a, #4ade80); }
+    .meter-fill.neutral { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+
+    /* ── Bull/Bear Lists ── */
+    .bb-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 640px) { .bb-grid { grid-template-columns: 1fr; } }
+
+    .bb-card {
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 2px solid;
+    }
+    .bb-card.bull { background: var(--bull-light); border-color: #fca5a5; }
+    .bb-card.bear { background: var(--bear-light); border-color: #86efac; }
+
+    .bb-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bb-card.bull h3 { color: #b91c1c; }
+    .bb-card.bear h3 { color: #15803d; }
+
+    .bb-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+    .bb-item .num {
+      min-width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .bull .bb-item .num { background: #dc2626; color: #fff; }
+    .bear .bb-item .num { background: #16a34a; color: #fff; }
+    .bb-item .content { font-size: 14px; }
+    .bb-item .content strong { display: block; font-weight: 700; margin-bottom: 2px; }
+    .bb-item .content span { color: var(--text-muted); font-size: 13px; }
+
+    /* ── Table ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .data-table th {
+      background: #f1f5f9;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-bottom: 2px solid var(--border);
+    }
+    .data-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f8fafc; }
+    .tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .tag.sell { background: #dcfce7; color: #15803d; }
+    .tag.buy { background: #fee2e2; color: #b91c1c; }
+    .tag.neutral { background: #dbeafe; color: #1d4ed8; }
+
+    /* ── Chart containers ── */
+    .chart-wrap {
+      position: relative;
+      height: 300px;
+    }
+    .chart-wrap-sm {
+      position: relative;
+      height: 220px;
+    }
+
+    /* ── Opinion Cards ── */
+    .opinion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .opinion-card {
+      border-radius: var(--radius);
+      padding: 18px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+    .opinion-card .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .opinion-card .avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .opinion-card.bull-op .avatar { background: var(--bull-light); }
+    .opinion-card.bear-op .avatar { background: var(--bear-light); }
+    .opinion-card .name { font-weight: 700; font-size: 14px; }
+    .opinion-card .org { font-size: 12px; color: var(--text-muted); }
+    .opinion-card .quote { font-size: 14px; color: var(--text); line-height: 1.6; }
+    .opinion-card .target {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .bull-op .target { background: var(--bull-light); color: #dc2626; }
+    .bear-op .target { background: var(--bear-light); color: #16a34a; }
+
+    /* ── Ticker Scroll ── */
+    .ticker-wrap {
+      background: #0f172a;
+      color: #fff;
+      padding: 8px 0;
+      overflow: hidden;
+    }
+    .ticker-inner {
+      display: flex;
+      gap: 40px;
+      animation: ticker 30s linear infinite;
+      white-space: nowrap;
+    }
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .ticker-item { font-size: 13px; }
+    .ticker-item .name { color: #94a3b8; margin-right: 6px; }
+    .ticker-item .price { font-weight: 700; }
+    .ticker-item .chg { margin-left: 4px; }
+    .ticker-item .chg.up { color: #f87171; }
+    .ticker-item .chg.down { color: #4ade80; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+      .index-hero { gap: 12px; padding: 10px 16px; }
+    }
+
+    /* ── Progress bars for sentiment ── */
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .progress-label { min-width: 80px; font-size: 13px; font-weight: 600; }
+    .progress-bar-wrap { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 5px; transition: width 1.2s ease; }
+    .progress-pct { min-width: 36px; font-size: 13px; font-weight: 700; text-align: right; }
+
+    /* ── Stock badges ── */
+    .stock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 3px;
+    }
+    .stock-badge.up { background: #fee2e2; color: #b91c1c; }
+    .stock-badge.down { background: #dcfce7; color: #15803d; }
+    .stock-badge.neutral { background: #dbeafe; color: #1d4ed8; }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    /* ── Tooltip ── */
+    [data-tooltip] { position: relative; cursor: help; }
+    [data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 200;
+    }
+    [data-tooltip]:hover::after { opacity: 1; }
+
+    /* ── Highlight box ── */
+    .highlight-box {
+      border-left: 4px solid;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .highlight-box.bull { border-color: var(--bull); background: var(--bull-light); }
+    .highlight-box.bear { border-color: var(--bear); background: var(--bear-light); }
+    .highlight-box.info { border-color: var(--neutral); background: var(--neutral-light); }
+  </style>
+</head>
+<body>
+
+<!-- Ticker -->
+<div class="ticker-wrap">
+  <div class="ticker-inner" id="ticker">
+    <span class="ticker-item"><span class="name">加權指數</span><span class="price">38,926</span><span class="chg down">▼ 376.87 (-0.96%)</span></span>
+    <span class="ticker-item"><span class="name">台積電 2330</span><span class="price">2,135</span><span class="chg down">▼ 45 (-2.06%)</span></span>
+    <span class="ticker-item"><span class="name">聯電 2303</span><span class="price">↑</span><span class="chg up">外資買超16萬張</span></span>
+    <span class="ticker-item"><span class="name">聯發科 2454</span><span class="price">Q1 EPS</span><span class="chg up">▲ 15.17元</span></span>
+    <span class="ticker-item"><span class="name">日月光 3711</span><span class="price">目標價</span><span class="chg up">▲ 660元</span></span>
+    <span class="ticker-item"><span class="name">南亞科 2408</span><span class="price">外資</span><span class="chg down">▼ 賣超4.13萬張</span></span>
+    <span class="ticker-item"><span class="name">三大法人</span><span class="price">合計</span><span class="chg down">▼ 賣超531.67億</span></span>
+    <span class="ticker-item"><span class="name">外資本周</span><span class="price">提款</span><span class="chg down">▼ 1,922億元</span></span>
+    <span class="ticker-item"><span class="name">加權指數</span><span class="price">38,926</span><span class="chg down">▼ 376.87 (-0.96%)</span></span>
+    <span class="ticker-item"><span class="name">台積電 2330</span><span class="price">2,135</span><span class="chg down">▼ 45 (-2.06%)</span></span>
+    <span class="ticker-item"><span class="name">聯電 2303</span><span class="price">↑</span><span class="chg up">外資買超16萬張</span></span>
+    <span class="ticker-item"><span class="name">聯發科 2454</span><span class="price">Q1 EPS</span><span class="chg up">▲ 15.17元</span></span>
+    <span class="ticker-item"><span class="name">日月光 3711</span><span class="price">目標價</span><span class="chg up">▲ 660元</span></span>
+    <span class="ticker-item"><span class="name">南亞科 2408</span><span class="price">外資</span><span class="chg down">▼ 賣超4.13萬張</span></span>
+    <span class="ticker-item"><span class="name">三大法人</span><span class="price">合計</span><span class="chg down">▼ 賣超531.67億</span></span>
+    <span class="ticker-item"><span class="name">外資本周</span><span class="price">提款</span><span class="chg down">▼ 1,922億元</span></span>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="badge">每日台股分析報告</div>
+  <h1>台股利多利空統整</h1>
+  <p class="subtitle">2026年5月1日 ｜ 資料截至 4月30日收盤</p>
+  <div class="index-hero">
+    <div>
+      <div class="label">加權指數</div>
+      <div class="val">38,926</div>
+      <div class="chg down">▼ 376.87 (-0.96%)</div>
+    </div>
+    <div style="width:1px;height:50px;background:rgba(255,255,255,0.2)"></div>
+    <div>
+      <div class="label">4月單月漲幅</div>
+      <div class="val" style="color:#fca5a5">+7,203點</div>
+      <div class="chg up">史上最強4月 (+22.7%)</div>
+    </div>
+    <div style="width:1px;height:50px;background:rgba(255,255,255,0.2)"></div>
+    <div>
+      <div class="label">成交值</div>
+      <div class="val">1.02兆</div>
+      <div class="chg" style="color:#86efac">4/30 成交值</div>
+    </div>
+  </div>
+</header>
+
+<!-- Nav Tabs -->
+<nav class="nav-tabs">
+  <div class="nav-tab active" onclick="switchTab('overview')">📊 總覽</div>
+  <div class="nav-tab" onclick="switchTab('bullbear')">⚖️ 利多利空</div>
+  <div class="nav-tab" onclick="switchTab('institutional')">🏦 法人動向</div>
+  <div class="nav-tab" onclick="switchTab('stocks')">📈 重點個股</div>
+  <div class="nav-tab" onclick="switchTab('opinion')">💬 分析師觀點</div>
+  <div class="nav-tab" onclick="switchTab('history')">📈 十日趨勢</div>
+</nav>
+
+<main>
+
+  <!-- ═══════════ OVERVIEW ═══════════ -->
+  <div class="section active" id="section-overview">
+
+    <!-- Stat Cards -->
+    <div class="summary-grid">
+      <div class="stat-card bear">
+        <div class="stat-label">外資賣超（本周）</div>
+        <div class="stat-value">1,922億</div>
+        <div class="stat-sub">連續4日賣超</div>
+      </div>
+      <div class="stat-card bull">
+        <div class="stat-label">投信買超（連續）</div>
+        <div class="stat-value">連8日</div>
+        <div class="stat-sub">4/30 買超11.84億</div>
+      </div>
+      <div class="stat-card neutral">
+        <div class="stat-label">台積電收盤</div>
+        <div class="stat-value">2,135</div>
+        <div class="stat-sub">▼ 45元 (-2.06%)</div>
+      </div>
+      <div class="stat-card bull">
+        <div class="stat-label">Q1上市櫃獲利預估</div>
+        <div class="stat-value">1.5兆</div>
+        <div class="stat-sub">全年目標6兆（歷史新高）</div>
+      </div>
+    </div>
+
+    <!-- Sentiment -->
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#dbeafe">🧭</div>
+        市場情緒儀表板
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;">
+        <div>
+          <div class="progress-row">
+            <div class="progress-label" style="color:var(--bull)">基本面</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:82%;background:linear-gradient(90deg,#16a34a,#4ade80)"></div>
+            </div>
+            <div class="progress-pct" style="color:var(--bull)">82%</div>
+          </div>
+          <div class="progress-row">
+            <div class="progress-label" style="color:var(--bear)">籌碼面</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:30%;background:linear-gradient(90deg,#dc2626,#f87171)"></div>
+            </div>
+            <div class="progress-pct" style="color:var(--bear)">30%</div>
+          </div>
+          <div class="progress-row">
+            <div class="progress-label" style="color:#d97706">技術面</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:45%;background:linear-gradient(90deg,#d97706,#fbbf24)"></div>
+            </div>
+            <div class="progress-pct" style="color:#d97706">45%</div>
+          </div>
+          <div class="progress-row">
+            <div class="progress-label" style="color:var(--neutral)">資金面</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:60%;background:linear-gradient(90deg,#2563eb,#60a5fa)"></div>
+            </div>
+            <div class="progress-pct" style="color:var(--neutral)">60%</div>
+          </div>
+          <div class="progress-row">
+            <div class="progress-label" style="color:#7c3aed">題材面</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:75%;background:linear-gradient(90deg,#7c3aed,#a78bfa)"></div>
+            </div>
+            <div class="progress-pct" style="color:#7c3aed">75%</div>
+          </div>
+        </div>
+        <div>
+          <div class="chart-wrap-sm">
+            <canvas id="sentimentChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Box -->
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#fef9c3">📝</div>
+        今日市場總結
+      </div>
+      <div class="highlight-box info">
+        <strong>核心觀點：「籌碼面利空壓住基本面利多」</strong><br>
+        台股4月創史上最強單月漲幅（+22.7%）後，4月30日出現明顯獲利了結賣壓，加權指數收38,926點，跌376點。
+      </div>
+      <div class="highlight-box bull">
+        <strong>利多：</strong>企業獲利創歷史新高、AI需求強勁、投信連8日買超、Computex題材將至。台積電Q1營收年增45.2%，聯發科AI ASIC目標翻倍。
+      </div>
+      <div class="highlight-box bear">
+        <strong>利空：</strong>外資本周大幅提款1,922億元，連4日賣超台積電7.8萬張。KD高檔死叉、融資餘額高、台美關稅20%（日韓15%）競爭劣勢，5月中下旬恐修正一成。
+      </div>
+      <p style="font-size:14px;color:var(--text-muted);margin-top:12px;">
+        下檔支撐先看 <strong>37,000點</strong>整數關卡與月線。待台積電站回均線，大盤有望重拾漲勢，再度挑戰 <strong>41,000點</strong> 目標。
+      </p>
+    </div>
+
+    <!-- Monthly Performance Chart -->
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#dcfce7">📅</div>
+        台股近期走勢（2026年）
+      </div>
+      <div class="chart-wrap">
+        <canvas id="indexChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ BULL / BEAR ═══════════ -->
+  <div class="section" id="section-bullbear">
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#fef9c3">⚖️</div>
+        利多 vs 利空 強度比較
+      </div>
+      <div class="chart-wrap">
+        <canvas id="bbChart"></canvas>
+      </div>
+    </div>
+
+    <div class="bb-grid">
+      <div class="bb-card bull">
+        <h3>📈 五大利多因素</h3>
+        <div class="bb-item">
+          <div class="num">1</div>
+          <div class="content">
+            <strong>企業獲利創歷史新高</strong>
+            <span>Q1上市櫃獲利預估1.5兆，全年目標6兆。台積電Q1年增45.2%，S&P500獲利年增率上修至18%。</span>
+          </div>
+        </div>
+        <div class="bb-item">
+          <div class="num">2</div>
+          <div class="content">
+            <strong>戴維斯雙擊效應</strong>
+            <span>獲利成長帶動本益比評價拉高，美科技七巨頭本益比僅23倍，估值偏低。</span>
+          </div>
+        </div>
+        <div class="bb-item">
+          <div class="num">3</div>
+          <div class="content">
+            <strong>ETF滾雪球效應</strong>
+            <span>投信連8日買超，主動式ETF投資人達187萬人，00878配息創新高（年化10.4%）。</span>
+          </div>
+        </div>
+        <div class="bb-item">
+          <div class="num">4</div>
+          <div class="content">
+            <strong>520行情 + Computex題材</strong>
+            <span>過去10年5月上漲機率近八成。6月Computex黃仁勳將演講，AI題材搶先反映。</span>
+          </div>
+        </div>
+        <div class="bb-item">
+          <div class="num">5</div>
+          <div class="content">
+            <strong>AI需求強勁</strong>
+            <span>台灣2026年出口預估破8,000億美元。Gartner預測半導體年增64%，AI佔30%。聯發科ASIC目標翻倍。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bb-card bear">
+        <h3>📉 五大利空因素</h3>
+        <div class="bb-item">
+          <div class="num">1</div>
+          <div class="content">
+            <strong>外資持續大幅賣超</strong>
+            <span>本周合計賣超1,922億元，連4日賣超台積電7.8萬張。外資期貨空單44萬口高檔。</span>
+          </div>
+        </div>
+        <div class="bb-item">
+          <div class="num">2</div>
+          <div class="content">
+            <strong>技術面過熱警訊</strong>
+            <span>大盤乖離均線過大，KD高檔死叉，融資餘額居高不下，違約交割逐月衝高。</span>
+          </div>
+        </div>
+        <div class="bb-item">
+          <div class="num">3</div>
+          <div class="content">
+            <strong>台美關稅不確定性</strong>
+            <span>台灣關稅維持20%（日韓已談至15%），出口美國比重高的產業競爭差距擴大。</span>
+          </div>
+        </div>
+        <div class="bb-item">
+          <div class="num">4</div>
+          <div class="content">
+            <strong>國際總體經濟風險</strong>
+            <span>中東戰事油價波動、美債殖利率走高、聯準會主席換人、SpaceX/OpenAI大規模募資排擠資金。</span>
+          </div>
+        </div>
+        <div class="bb-item">
+          <div class="num">5</div>
+          <div class="content">
+            <strong>除息效應與短線修正</strong>
+            <span>上市公司除息預估蒸發指數700點。富邦投顧預估5月中下旬修正約一成（約3,900點）。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">
+        <div class="icon" style="background:#f3e8ff">🎯</div>
+        關鍵支撐與壓力區間
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+        <div style="text-align:center;padding:16px;background:#fee2e2;border-radius:10px;">
+          <div style="font-size:12px;color:#dc2626;font-weight:700;margin-bottom:4px">強力支撐</div>
+          <div style="font-size:24px;font-weight:800;color:#dc2626">37,000</div>
+          <div style="font-size:12px;color:#dc2626">整數關卡 / 月線</div>
+        </div>
+        <div style="text-align:center;padding:16px;background:#fef9c3;border-radius:10px;">
+          <div style="font-size:12px;color:#92400e;font-weight:700;margin-bottom:4px">現況</div>
+          <div style="font-size:24px;font-weight:800;color:#92400e">38,926</div>
+          <div style="font-size:12px;color:#92400e">4/30 收盤</div>
+        </div>
+        <div style="text-align:center;padding:16px;background:#dcfce7;border-radius:10px;">
+          <div style="font-size:12px;color:#dc2626;font-weight:700;margin-bottom:4px">近期目標</div>
+          <div style="font-size:24px;font-weight:800;color:#dc2626">41,000</div>
+          <div style="font-size:12px;color:#dc2626">法人共識目標</div>
+        </div>
+        <div style="text-align:center;padding:16px;background:#dbeafe;border-radius:10px;">
+          <div style="font-size:12px;color:#dc2626;font-weight:700;margin-bottom:4px">樂觀目標</div>
+          <div style="font-size:24px;font-weight:800;color:#dc2626">43,000+</div>
+          <div style="font-size:12px;color:#dc2626">年度高點預估</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ INSTITUTIONAL ═══════════ -->
+  <div class="section" id="section-institutional">
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#fee2e2">🏦</div>
+        三大法人買賣超（4月30日）
+      </div>
+      <div class="chart-wrap">
+        <canvas id="institutionalChart"></canvas>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div class="card">
+        <div class="card-title">
+          <div class="icon" style="background:#fee2e2">📉</div>
+          外資賣超前5名（4/30）
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr><th>個股</th><th>賣超張數</th><th>動向</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>南亞科 2408</strong></td><td>41,281張</td><td><span class="tag sell">賣超</span></td></tr>
+            <tr><td><strong>台積電 2330</strong></td><td>21,200張</td><td><span class="tag sell">賣超</span></td></tr>
+            <tr><td><strong>旺宏 2337</strong></td><td>17,800張</td><td><span class="tag sell">賣超</span></td></tr>
+            <tr><td><strong>廣達</strong></td><td>8,158張</td><td><span class="tag sell">賣超</span></td></tr>
+            <tr><td><strong>仁寶</strong></td><td>7,786張</td><td><span class="tag sell">賣超</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <div class="icon" style="background:#dcfce7">📈</div>
+          外資買超前5名（4/30）
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr><th>個股</th><th>買超張數</th><th>動向</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>聯電 2303</strong></td><td>160,025張</td><td><span class="tag buy">買超</span></td></tr>
+            <tr><td><strong>00981A</strong></td><td>103,128張</td><td><span class="tag buy">買超</span></td></tr>
+            <tr><td><strong>京元電子 2449</strong></td><td>40,482張</td><td><span class="tag buy">買超</span></td></tr>
+            <tr><td><strong>00992A</strong></td><td>38,978張</td><td><span class="tag buy">買超</span></td></tr>
+            <tr><td><strong>台積電（買超）</strong></td><td>—</td><td><span class="tag neutral">觀察</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#fef9c3">📊</div>
+        外資本周買賣超趨勢（4/27–4/30）
+      </div>
+      <div class="chart-wrap">
+        <canvas id="weeklyChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#f3e8ff">📋</div>
+        法人動向解讀
+      </div>
+      <div class="highlight-box bear">
+        <strong>外資：明顯看空、獲利了結</strong><br>
+        外資連4日賣超，本周合計提款1,922億元，重點調節台積電、南亞科等大型權值股。外資期貨空單未平倉口數仍達44萬口，顯示外資對短線走勢偏空。主要原因可能包含：新台幣貶值壓力、高點獲利了結、全球資金重新配置。
+      </div>
+      <div class="highlight-box bull">
+        <strong>投信：逆勢買超、提供支撐</strong><br>
+        投信連8日買超，顯示內資對台股基本面仍有信心。主動式ETF持續吸引資金，00878配息創新高，吸引存股族持續加碼。投信買超聯電、京元電子等個股，顯示資金輪動至相對低估標的。
+      </div>
+      <div class="highlight-box info">
+        <strong>自營商：小幅賣超</strong><br>
+        自營商賣超7.89億元，規模相對較小，主要為避險操作。整體而言，土洋對做格局明顯，外資賣、投信買，指數短線震盪整理。
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ STOCKS ═══════════ -->
+  <div class="section" id="section-stocks">
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#dbeafe">🔍</div>
+        重點個股動態
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr><th>個股</th><th>最新動態</th><th>法人動向</th><th>評級</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>台積電 2330</strong><br><span style="font-size:12px;color:var(--text-muted)">收2,135元</span></td>
+            <td>出脫安謀持股獲利54億元；台積電Q1營收4,151.9億，年增45.2%；2026年資本支出超預期</td>
+            <td><span class="tag sell">外資連4賣 7.8萬張</span></td>
+            <td><span class="tag neutral">觀察</span></td>
+          </tr>
+          <tr>
+            <td><strong>聯電 2303</strong><br><span style="font-size:12px;color:var(--text-muted)">六大利多</span></td>
+            <td>股東會推史努比紀念品，豪砸54.75億回購股票，六大利多齊發</td>
+            <td><span class="tag buy">外資大買16萬張</span></td>
+            <td><span class="tag buy">積極</span></td>
+          </tr>
+          <tr>
+            <td><strong>聯發科 2454</strong><br><span style="font-size:12px;color:var(--text-muted)">Q1 EPS 15.17</span></td>
+            <td>Q1獲利243.76億元，AI ASIC營收目標翻倍，目標15%市佔率</td>
+            <td><span class="tag neutral">觀察中</span></td>
+            <td><span class="tag buy">看好</span></td>
+          </tr>
+          <tr>
+            <td><strong>日月光 3711</strong><br><span style="font-size:12px;color:var(--text-muted)">AI封測龍頭</span></td>
+            <td>Q1毛利率、營益率雙升，外資齊聲喊買，目標價最高上看660元</td>
+            <td><span class="tag buy">外資全面買進</span></td>
+            <td><span class="tag buy">強力看好</span></td>
+          </tr>
+          <tr>
+            <td><strong>南電（ABF）</strong><br><span style="font-size:12px;color:var(--text-muted)">千金股</span></td>
+            <td>外資喊「超級循環」，ABF載板需求爆發，股價晉升千金股</td>
+            <td><span class="tag buy">外資看好</span></td>
+            <td><span class="tag buy">看好</span></td>
+          </tr>
+          <tr>
+            <td><strong>南亞科 2408</strong><br><span style="font-size:12px;color:var(--text-muted)">記憶體</span></td>
+            <td>HBM需求強勁，但外資大幅調節</td>
+            <td><span class="tag sell">外資賣超4.13萬張</span></td>
+            <td><span class="tag neutral">觀察</span></td>
+          </tr>
+          <tr>
+            <td><strong>友達 2409</strong><br><span style="font-size:12px;color:var(--text-muted)">面板</span></td>
+            <td>Q1淨損11.4億元，EPS -0.15元，持續虧損</td>
+            <td><span class="tag sell">外資調節</span></td>
+            <td><span class="tag sell">偏空</span></td>
+          </tr>
+          <tr>
+            <td><strong>京元電子 2449</strong><br><span style="font-size:12px;color:var(--text-muted)">封測</span></td>
+            <td>AI測試需求增加，受惠AI供應鏈擴張</td>
+            <td><span class="tag buy">外資買超4萬張</span></td>
+            <td><span class="tag buy">看好</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#dcfce7">🏆</div>
+        熱門族群分析
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+        <div style="padding:16px;background:#f0fdf4;border-radius:10px;border:1px solid #86efac;">
+          <div style="font-weight:700;color:#15803d;margin-bottom:8px">🤖 AI / 半導體</div>
+          <div style="font-size:13px;color:var(--text)">台積電、聯發科、日月光、京元電子。AI需求持續強勁，Gartner預測2026年半導體年增64%。</div>
+          <div style="margin-top:8px">
+            <span class="stock-badge up">台積電</span>
+            <span class="stock-badge up">聯發科</span>
+            <span class="stock-badge up">日月光</span>
+          </div>
+        </div>
+        <div style="padding:16px;background:#f0fdf4;border-radius:10px;border:1px solid #86efac;">
+          <div style="font-weight:700;color:#15803d;margin-bottom:8px">🔌 ABF載板</div>
+          <div style="font-size:13px;color:var(--text)">南電、欣興。外資喊「超級循環」，AI伺服器需求帶動ABF需求爆發，南電晉升千金股。</div>
+          <div style="margin-top:8px">
+            <span class="stock-badge up">南電</span>
+            <span class="stock-badge up">欣興</span>
+          </div>
+        </div>
+        <div style="padding:16px;background:#fef9c3;border-radius:10px;border:1px solid #fde68a;">
+          <div style="font-weight:700;color:#92400e;margin-bottom:8px">💾 記憶體</div>
+          <div style="font-size:13px;color:var(--text)">南亞科、旺宏。HBM需求強勁，但外資大幅調節，短線籌碼面偏空。</div>
+          <div style="margin-top:8px">
+            <span class="stock-badge neutral">南亞科</span>
+            <span class="stock-badge neutral">旺宏</span>
+          </div>
+        </div>
+        <div style="padding:16px;background:#fee2e2;border-radius:10px;border:1px solid #fca5a5;">
+          <div style="font-weight:700;color:#b91c1c;margin-bottom:8px">📺 面板</div>
+          <div style="font-size:13px;color:var(--text)">友達Q1虧損，面板產業景氣尚未回升，外資持續調節。</div>
+          <div style="margin-top:8px">
+            <span class="stock-badge down">友達</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ OPINION ═══════════ -->
+  <div class="section" id="section-opinion">
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#fef9c3">💬</div>
+        多空分析師觀點
+      </div>
+      <div class="opinion-grid">
+        <div class="opinion-card bull-op">
+          <div class="header">
+            <div class="avatar">📈</div>
+            <div>
+              <div class="name">黎方國</div>
+              <div class="org">統一投顧董事長</div>
+            </div>
+          </div>
+          <div class="quote">「台股有8大利多加持，指數沒有最高、只有更高。即使期間有出現利空亂流，但下跌都是買點。」技術面多頭排列、業績面亮眼、資金面寬鬆、題材面Computex將至。</div>
+          <div class="target">🎯 目標：持續創高，選AI相關族群</div>
+        </div>
+        <div class="opinion-card bull-op">
+          <div class="header">
+            <div class="avatar">🚀</div>
+            <div>
+              <div class="name">陳奕光</div>
+              <div class="org">富邦投顧董事長</div>
+            </div>
+          </div>
+          <div class="quote">「五大利多支柱將成為台股續強底氣，包含企業獲利創新高、戴維斯雙擊效應、ETF滾雪球、520行情及Computex題材。」短線震盪後仍有望蓄勢挑戰41,000點。</div>
+          <div class="target">🎯 目標：41,000點</div>
+        </div>
+        <div class="opinion-card bull-op">
+          <div class="header">
+            <div class="avatar">⚡</div>
+            <div>
+              <div class="name">杜金龍</div>
+              <div class="org">資深證券分析師</div>
+            </div>
+          </div>
+          <div class="quote">「台股大盤在2026年4月已站上36,000點，主升段目標4萬點，末升段全攻略。利用費波那契時間轉折與波浪理論分析，年度高點可望更高。」</div>
+          <div class="target">🎯 目標：主升段→4萬，末升段更高</div>
+        </div>
+        <div class="opinion-card bear-op">
+          <div class="header">
+            <div class="avatar">⚠️</div>
+            <div>
+              <div class="name">陳永俊</div>
+              <div class="org">富邦投顧總座</div>
+            </div>
+          </div>
+          <div class="quote">「台股短線過熱，除息預估蒸發指數約700點，研判5月中下旬開始可能有波修正，最高點起算整理幅度可能約一成。未來1-2週可考慮逢高獲利了結，但第四季還有高點。」</div>
+          <div class="target">⚠️ 警示：5月中下旬恐修正一成</div>
+        </div>
+        <div class="opinion-card bear-op">
+          <div class="header">
+            <div class="avatar">🔻</div>
+            <div>
+              <div class="name">郭哲榮</div>
+              <div class="org">獨立分析師</div>
+            </div>
+          </div>
+          <div class="quote">「目前的盤勢特徵可以總結為『籌碼面利空壓住基本面利多』。台股四月大漲7000點，五月將多殺多？融資高、外資空單多，短線風險不可忽視。」</div>
+          <div class="target">⚠️ 警示：5月恐多殺多，逢低佈局</div>
+        </div>
+        <div class="opinion-card bear-op">
+          <div class="header">
+            <div class="avatar">📊</div>
+            <div>
+              <div class="name">群益期貨</div>
+              <div class="org">法人分析</div>
+            </div>
+          </div>
+          <div class="quote">「台股面臨現階段乖離率過大、融資餘額飆高、外資空單水位位處高檔、違約交割金額逐月衝高等利空，研判5月行情恐轉趨震盪，但台股基本面依舊強勢。」</div>
+          <div class="target">⚠️ 警示：5月震盪格局，基本面支撐</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#dbeafe">📡</div>
+        多空力道比較
+      </div>
+      <div class="chart-wrap-sm">
+        <canvas id="opinionChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ HISTORY ═══════════ -->
+  <div class="section" id="section-history">
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:#dbeafe">📊</div>
+        近十日市場演變
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+        <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0">
+          <div style="font-size:13px;color:#64748b;font-weight:600;margin-bottom:12px">指數 vs 法人買賣超</div>
+          <div class="chart-wrap" style="height:300px">
+            <canvas id="historyChart"></canvas>
+          </div>
+        </div>
+        <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0">
+          <div style="font-size:13px;color:#64748b;font-weight:600;margin-bottom:12px">市場情緒演變</div>
+          <div class="chart-wrap" style="height:300px">
+            <canvas id="sentimentHistoryChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0;overflow-x:auto">
+        <div style="font-size:13px;color:#64748b;font-weight:600;margin-bottom:12px">十日詳細數據</div>
+        <table class="data-table" style="font-size:12px">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>指數</th>
+              <th>漲跌%</th>
+              <th>外資(億)</th>
+              <th>投信(億)</th>
+              <th>重點事件</th>
+            </tr>
+          </thead>
+          <tbody id="historyTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>台股每日利多利空統整報告 ｜ 資料來源：經濟日報、Yahoo股市、ETtoday財經、鉅亨網、群益期貨</p>
+  <p style="margin-top:4px">本報告僅供參考，不構成投資建議。投資有風險，請謹慎評估。</p>
+</footer>
+
+<script>
+// ── Tab Switching ──
+function switchTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── Chart Defaults ──
+Chart.defaults.font.family = "'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif";
+Chart.defaults.color = '#64748b';
+
+// ── Sentiment Radar ──
+new Chart(document.getElementById('sentimentChart'), {
+  type: 'radar',
+  data: {
+    labels: ['基本面', '籌碼面', '技術面', '資金面', '題材面'],
+    datasets: [{
+      label: '市場情緒',
+      data: [82, 30, 45, 60, 75],
+      backgroundColor: 'rgba(37,99,235,0.15)',
+      borderColor: '#2563eb',
+      borderWidth: 2,
+      pointBackgroundColor: '#2563eb',
+      pointRadius: 5
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        min: 0, max: 100,
+        ticks: { stepSize: 25, font: { size: 10 } },
+        grid: { color: '#e2e8f0' },
+        pointLabels: { font: { size: 12, weight: '600' } }
+      }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+
+// ── Index Monthly Chart ──
+new Chart(document.getElementById('indexChart'), {
+  type: 'line',
+  data: {
+    labels: ['1月初', '1月底', '2月初', '2月底', '3月初', '3月底', '4月初', '4月中', '4月27', '4月30'],
+    datasets: [{
+      label: '加權指數',
+      data: [28500, 30200, 29800, 31500, 30900, 31723, 31723, 36000, 40257, 38926],
+      borderColor: '#2563eb',
+      backgroundColor: 'rgba(37,99,235,0.08)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 5,
+      pointBackgroundColor: '#2563eb',
+      pointHoverRadius: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => `指數：${ctx.parsed.y.toLocaleString()} 點`
+        }
+      }
+    },
+    scales: {
+      y: {
+        min: 26000,
+        ticks: { callback: v => v.toLocaleString() },
+        grid: { color: '#f1f5f9' }
+      },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ── Bull/Bear Radar ──
+new Chart(document.getElementById('bbChart'), {
+  type: 'bar',
+  data: {
+    labels: ['企業獲利', 'AI需求', 'ETF資金', '題材面', '技術面', '外資動向', '籌碼面', '關稅風險', '國際風險', '除息壓力'],
+    datasets: [
+      {
+        label: '利多強度',
+        data: [90, 85, 75, 70, 0, 0, 0, 0, 0, 0],
+        backgroundColor: 'rgba(220,38,38,0.7)',
+        borderColor: '#dc2626',
+        borderWidth: 1
+      },
+      {
+        label: '利空強度',
+        data: [0, 0, 0, 0, 65, 85, 80, 60, 55, 50],
+        backgroundColor: 'rgba(22,163,74,0.7)',
+        borderColor: '#16a34a',
+        borderWidth: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}：${ctx.parsed.y}%`
+        }
+      }
+    },
+    scales: {
+      y: {
+        min: 0, max: 100,
+        ticks: { callback: v => v + '%' },
+        grid: { color: '#f1f5f9' }
+      },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ── Institutional Chart ──
+new Chart(document.getElementById('institutionalChart'), {
+  type: 'bar',
+  data: {
+    labels: ['外資', '投信', '自營商', '三大法人合計'],
+    datasets: [{
+      label: '買賣超金額（億元）',
+      data: [-535.62, 11.84, -7.89, -531.67],
+      backgroundColor: [
+        'rgba(22,163,74,0.75)',
+        'rgba(220,38,38,0.75)',
+        'rgba(22,163,74,0.5)',
+        'rgba(22,163,74,0.85)'
+      ],
+      borderColor: [
+        '#16a34a', '#dc2626', '#16a34a', '#16a34a'
+      ],
+      borderWidth: 2,
+      borderRadius: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const v = ctx.parsed.y;
+            return `${v > 0 ? '買超' : '賣超'} ${Math.abs(v).toFixed(2)} 億元`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        ticks: { callback: v => v + '億' },
+        grid: { color: '#f1f5f9' }
+      },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ── Weekly Trend Chart ──
+new Chart(document.getElementById('weeklyChart'), {
+  type: 'line',
+  data: {
+    labels: ['4/27 (一)', '4/28 (二)', '4/29 (三)', '4/30 (四)'],
+      datasets: [
+      {
+        label: '外資買賣超（億元）',
+        data: [-511, -481, -394, -535.62],
+        borderColor: '#16a34a',
+        backgroundColor: 'rgba(22,163,74,0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 6,
+        pointBackgroundColor: '#16a34a'
+      },
+      {
+        label: '投信買賣超（億元）',
+        data: [135, 80, 55, 11.84],
+        borderColor: '#dc2626',
+        backgroundColor: 'rgba(220,38,38,0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 6,
+        pointBackgroundColor: '#dc2626'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const v = ctx.parsed.y;
+            return `${ctx.dataset.label}：${v > 0 ? '+' : ''}${v.toFixed(2)} 億元`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        ticks: { callback: v => v + '億' },
+        grid: { color: '#f1f5f9' }
+      },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ── History Data ──
+const historyData = [
+  { date: '04/17', index: 36720, chg: 1.20, foreign: 310, trust: 28, event: '台積電財報創五新高' },
+  { date: '04/20', index: 36958, chg: 0.65, foreign: 240, trust: 20, event: '盤中攻上37344點新高' },
+  { date: '04/21', index: 38440, chg: 4.01, foreign: 820, trust: 45, event: '股王股后帶頭衝，大漲逾1500點' },
+  { date: '04/22', index: 38663, chg: 0.58, foreign: 155, trust: 12.4, event: '站穩38000點關卡' },
+  { date: '04/23', index: 39108, chg: 1.15, foreign: 340, trust: 30.2, event: '科技股大漲，美股財報激勵' },
+  { date: '04/24', index: 39025, chg: -0.21, foreign: -85, trust: 25, event: '震盪洗盤，融資餘額續增' },
+  { date: '04/27', index: 39345, chg: 0.82, foreign: 210, trust: 18.5, event: 'AI權值股領軍，市場情緒樂觀' },
+  { date: '04/28', index: 39522, chg: 0.45, foreign: 120, trust: 22, event: '指數再創收盤歷史新高' },
+  { date: '04/29', index: 39303, chg: -0.55, foreign: -161, trust: 15.2, event: '高檔震盪，外資轉賣' },
+  { date: '04/30', index: 38926, chg: -0.96, foreign: -535, trust: 11.8, event: '獲利了結，外資連4賣' }
+];
+
+// Populate History Table
+const historyTableBody = document.getElementById('historyTable');
+historyData.forEach((row, idx) => {
+  const tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid #e2e8f0';
+  if (idx % 2 === 0) tr.style.background = '#ffffff';
+  tr.innerHTML = `
+    <td style="padding:8px;font-weight:600">${row.date}</td>
+    <td style="padding:8px;text-align:right">${row.index.toLocaleString()}</td>
+    <td style="padding:8px;text-align:right;color:${row.chg >= 0 ? '#dc2626' : '#16a34a'};font-weight:600">${row.chg >= 0 ? '+' : ''}${row.chg.toFixed(2)}%</td>
+    <td style="padding:8px;text-align:right;color:${row.foreign >= 0 ? '#dc2626' : '#16a34a'};font-weight:600">${row.foreign >= 0 ? '+' : ''}${row.foreign.toFixed(0)}</td>
+    <td style="padding:8px;text-align:right;color:${row.trust >= 0 ? '#dc2626' : '#16a34a'};font-weight:600">${row.trust >= 0 ? '+' : ''}${row.trust.toFixed(1)}</td>
+    <td style="padding:8px;font-size:11px;color:#64748b">${row.event}</td>
+  `;
+  historyTableBody.appendChild(tr);
+});
+
+// History Trend Chart
+const historyCtx = document.getElementById('historyChart').getContext('2d');
+new Chart(historyCtx, {
+  type: 'line',
+  data: {
+    labels: historyData.map(d => d.date),
+    datasets: [
+      {
+        label: '加權指數',
+        data: historyData.map(d => d.index),
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.05)',
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#2563eb',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        yAxisID: 'y'
+      },
+      {
+        label: '外資買賣超',
+        data: historyData.map(d => d.foreign),
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245, 158, 11, 0.05)',
+        borderWidth: 2,
+        fill: false,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#f59e0b',
+        yAxisID: 'y1'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: true, position: 'top' } },
+    scales: {
+      y: { type: 'linear', display: true, position: 'left', title: { display: true, text: '指數點數' } },
+      y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: '法人買賣超(億)' }, grid: { drawOnChartArea: false } }
+    }
+  }
+});
+
+// Sentiment History Chart
+const sentimentHistoryCtx = document.getElementById('sentimentHistoryChart').getContext('2d');
+const sentimentHistory = [
+  { date: '04/17', basic: 75, chip: 70, tech: 80, fund: 75, theme: 85 },
+  { date: '04/20', basic: 78, chip: 72, tech: 82, fund: 76, theme: 86 },
+  { date: '04/21', basic: 85, chip: 80, tech: 88, fund: 82, theme: 90 },
+  { date: '04/22', basic: 83, chip: 78, tech: 85, fund: 80, theme: 88 },
+  { date: '04/23', basic: 84, chip: 75, tech: 86, fund: 78, theme: 87 },
+  { date: '04/24', basic: 80, chip: 60, tech: 82, fund: 65, theme: 85 },
+  { date: '04/27', basic: 82, chip: 65, tech: 84, fund: 70, theme: 86 },
+  { date: '04/28', basic: 82, chip: 50, tech: 80, fund: 60, theme: 85 },
+  { date: '04/29', basic: 75, chip: 35, tech: 70, fund: 45, theme: 75 },
+  { date: '04/30', basic: 82, chip: 30, tech: 45, fund: 60, theme: 75 }
+];
+new Chart(sentimentHistoryCtx, {
+  type: 'line',
+  data: {
+    labels: sentimentHistory.map(d => d.date),
+    datasets: [
+      { label: '基本面', data: sentimentHistory.map(d => d.basic), borderColor: '#10b981', borderWidth: 2, tension: 0.4, fill: false },
+      { label: '籌碼面', data: sentimentHistory.map(d => d.chip), borderColor: '#ef4444', borderWidth: 2, tension: 0.4, fill: false },
+      { label: '技術面', data: sentimentHistory.map(d => d.tech), borderColor: '#f59e0b', borderWidth: 2, tension: 0.4, fill: false },
+      { label: '資金面', data: sentimentHistory.map(d => d.fund), borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, fill: false },
+      { label: '題材面', data: sentimentHistory.map(d => d.theme), borderColor: '#8b5cf6', borderWidth: 2, tension: 0.4, fill: false }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: true, position: 'top' } },
+    scales: { y: { min: 0, max: 100, title: { display: true, text: '情緒評分 (0-100)' } } }
+  }
+});
+
+// ── Opinion Chart ──
+new Chart(document.getElementById('opinionChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['看多（積極）', '中性偏多', '看空（謹慎）'],
+    datasets: [{
+      data: [2, 1, 3],
+      backgroundColor: [
+        'rgba(220,38,38,0.8)',
+        'rgba(37,99,235,0.8)',
+        'rgba(22,163,74,0.8)'
+      ],
+      borderColor: ['#dc2626', '#2563eb', '#16a34a'],
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right' },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.label}：${ctx.parsed} 位分析師`
+        }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
