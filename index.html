@@ -236,27 +236,52 @@
     .bb-item .content span { color: var(--text-muted); font-size: 13px; }
 
     /* ── Table ── */
+    .data-table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
     .data-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 14px;
+      min-width: 600px;
     }
     .data-table th {
       background: #f1f5f9;
-      padding: 10px 14px;
+      padding: 12px 14px;
       text-align: left;
       font-weight: 700;
       font-size: 13px;
       color: var(--text-muted);
       border-bottom: 2px solid var(--border);
+      white-space: nowrap;
     }
     .data-table td {
-      padding: 11px 14px;
+      padding: 12px 14px;
       border-bottom: 1px solid var(--border);
       vertical-align: middle;
+      white-space: nowrap;
     }
     .data-table tr:last-child td { border-bottom: none; }
     .data-table tr:hover td { background: #f8fafc; }
+    @media (max-width: 768px) {
+      .data-table {
+        font-size: 12px;
+      }
+      .data-table th, .data-table td {
+        padding: 10px 12px;
+      }
+    }
+    @media (max-width: 640px) {
+      .data-table {
+        font-size: 11px;
+      }
+      .data-table th, .data-table td {
+        padding: 8px 10px;
+      }
+    }
     .tag {
       display: inline-block;
       padding: 2px 10px;
@@ -276,6 +301,129 @@
     .chart-wrap-sm {
       position: relative;
       height: 220px;
+    }
+    @media (max-width: 768px) {
+      .chart-wrap {
+        height: 250px;
+      }
+      .chart-wrap-sm {
+        height: 180px;
+      }
+    }
+    @media (max-width: 640px) {
+      .chart-wrap {
+        height: 200px;
+      }
+      .chart-wrap-sm {
+        height: 150px;
+      }
+    }
+
+    /* ── Mobile Responsive ── */
+    @media (max-width: 768px) {
+      header {
+        padding: 24px 16px 20px;
+      }
+      header h1 {
+        font-size: 24px;
+      }
+      .index-hero {
+        gap: 16px;
+        padding: 12px 20px;
+      }
+      .index-hero .val {
+        font-size: 24px;
+      }
+      main {
+        padding: 20px 16px;
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+      .stat-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+    @media (max-width: 640px) {
+      header {
+        padding: 20px 12px 16px;
+      }
+      header h1 {
+        font-size: 20px;
+      }
+      .index-hero {
+        gap: 12px;
+        padding: 10px 16px;
+        flex-direction: column;
+      }
+      .index-hero .val {
+        font-size: 20px;
+      }
+      .index-hero .chg {
+        font-size: 12px;
+      }
+      .nav-tabs {
+        padding: 0 8px;
+      }
+      .nav-tabs button {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+      main {
+        padding: 16px 12px;
+      }
+      .section {
+        margin-bottom: 16px;
+      }
+      .card {
+        padding: 14px;
+      }
+      .card-title {
+        font-size: 15px;
+        margin-bottom: 12px;
+      }
+      .stat-cards {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .stat-card {
+        padding: 14px;
+      }
+      .stat-card .stat-value {
+        font-size: 20px;
+      }
+      .stat-card .stat-label {
+        font-size: 11px;
+      }
+      .sentiment-wrap {
+        flex-direction: column;
+      }
+      .meter-container {
+        width: 100%;
+      }
+      .bb-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .bb-card {
+        padding: 16px;
+      }
+      .bb-card h3 {
+        font-size: 14px;
+      }
+      .bb-item .content {
+        font-size: 13px;
+      }
+      .opinion-grid {
+        grid-template-columns: 1fr;
+      }
+      .opinion-card {
+        padding: 14px;
+      }
+      .history-grid {
+        grid-template-columns: 1fr !important;
+      }
     }
 
     /* ── Opinion Cards ── */
@@ -484,6 +632,7 @@
   <div class="nav-tab" onclick="switchTab('stocks')">📈 重點個股</div>
   <div class="nav-tab" onclick="switchTab('opinion')">💬 分析師觀點</div>
   <div class="nav-tab" onclick="switchTab('history')">📈 十日趨勢</div>
+  <div class="nav-tab" onclick="switchTab('futures')">🔮 期貨籌碼</div>
 </nav>
 
 <main>
@@ -1013,7 +1162,7 @@
         <div class="icon" style="background:#dbeafe">📊</div>
         近十日市場演變
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px" class="history-grid">
         <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0">
           <div style="font-size:13px;color:#64748b;font-weight:600;margin-bottom:12px">指數 vs 法人買賣超</div>
           <div class="chart-wrap" style="height:300px">
@@ -1027,24 +1176,144 @@
           </div>
         </div>
       </div>
-      <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0;overflow-x:auto">
+      <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0">
         <div style="font-size:13px;color:#64748b;font-weight:600;margin-bottom:12px">十日詳細數據</div>
-        <table class="data-table" style="font-size:12px">
+        <div class="data-table-wrapper">
+          <table class="data-table" style="font-size:12px">
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>指數</th>
+                <th>漲跌點數</th>
+                <th>漲跌%</th>
+                <th>外資(億)</th>
+                <th>投信(億)</th>
+                <th>重點事件</th>
+              </tr>
+            </thead>
+            <tbody id="historyTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ FUTURES ═══════════ -->
+  <div class="section" id="section-futures">
+
+    <!-- 期貨籌碼概覽 -->
+    <div class="section-header">
+      <h2>🔮 期貨籌碼分析</h2>
+      <p>台指期貨三大法人近20日未平倉口數（資料來源：台灣期貨交易所）</p>
+    </div>
+
+    <!-- 最新期貨口數概覽卡片 -->
+    <div class="summary-grid" style="margin-bottom:20px">
+      <div class="stat-card bear">
+        <div class="stat-label">外資期貨淨空單</div>
+        <div class="stat-value" style="color:#16a34a">−44,044口</div>
+        <div class="stat-sub">外資空單大幅領先多單</div>
+      </div>
+      <div class="stat-card bull">
+        <div class="stat-label">投信期貨淨多單</div>
+        <div class="stat-value" style="color:#dc2626">+42,317口</div>
+        <div class="stat-sub">投信持續大量做多</div>
+      </div>
+      <div class="stat-card neutral">
+        <div class="stat-label">自營商期貨淨空單</div>
+        <div class="stat-value" style="color:#16a34a">−1,539口</div>
+        <div class="stat-sub">自營商小幅偵空</div>
+      </div>
+      <div class="stat-card" style="background:#f8fafc;border:1px solid #e2e8f0">
+        <div class="stat-label">外資多空比</div>
+        <div class="stat-value" style="color:#16a34a">1:3.25</div>
+        <div class="stat-sub">空單是多單3.25倍</div>
+      </div>
+    </div>
+
+    <!-- 期貨口數圖表 -->
+    <div class="charts-grid" style="grid-template-columns:1fr;margin-bottom:20px">
+      <div class="chart-card">
+        <div class="chart-title">外資期貨多空單口數趨勢（近18個交易日）</div>
+        <div style="height:300px"><canvas id="futuresChart"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px">
+      <div class="chart-card">
+        <div class="chart-title">三大法人淨多單口數比較</div>
+        <div style="height:260px"><canvas id="futuresNetChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">最新日三大法人多空單口數</div>
+        <div style="height:260px"><canvas id="futuresBarChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 期貨詳細表格 -->
+    <div class="chart-card" style="margin-bottom:20px">
+      <div class="chart-title">近18日三大法人小台指期貨未平倉口數明細</div>
+      <div class="table-wrapper">
+        <table class="data-table">
           <thead>
             <tr>
               <th>日期</th>
-              <th>指數</th>
-              <th>漲跌點數</th>
-              <th>漲跌%</th>
-              <th>外資(億)</th>
-              <th>投信(億)</th>
-              <th>重點事件</th>
+              <th>外資多單</th>
+              <th>外資空單</th>
+              <th>外資淨多單</th>
+              <th>投信多單</th>
+              <th>投信空單</th>
+              <th>投信淨多單</th>
+              <th>自營商淨多單</th>
             </tr>
           </thead>
-          <tbody id="historyTable"></tbody>
+          <tbody id="futuresTable"></tbody>
         </table>
       </div>
     </div>
+
+    <!-- 族群多空強度 -->
+    <div class="section-header" style="margin-top:30px">
+      <h2>🏆 各族群漲跌排行（2026/04/30）</h2>
+      <p>資料來源：台灣證券交易所，以開盤與收盤指數差計算</p>
+    </div>
+
+    <!-- 族群漲跌圖表 -->
+    <div class="chart-card" style="margin-bottom:20px">
+      <div class="chart-title">各族群漲跌點數與漲跌幅（紅漲綠跌）</div>
+      <div style="height:420px"><canvas id="sectorChart"></canvas></div>
+    </div>
+
+    <!-- 族群多空卡片 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div class="chart-card">
+        <div class="chart-title" style="color:#dc2626">🔴 多頭族群 TOP 7（漲幅最大）</div>
+        <div id="bullSectors"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="color:#16a34a">🟢 空頭族群 TOP 7（跌幅最大）</div>
+        <div id="bearSectors"></div>
+      </div>
+    </div>
+
+    <!-- 族群詳細表格 -->
+    <div class="chart-card">
+      <div class="chart-title">全部族群漲跌明細表</div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>族群名稱</th>
+              <th>收盤指數</th>
+              <th>漲跌點數</th>
+              <th>漲跌幅</th>
+              <th>多空判斷</th>
+            </tr>
+          </thead>
+          <tbody id="sectorTable"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
 </main>
@@ -1422,6 +1691,260 @@ new Chart(document.getElementById('opinionChart'), {
     }
   }
 });
+
+// ══ Futures Data ══
+const futuresData = [
+  { date: '04/07', foreign: { long: 14038, short: 45388, net: -31350 }, trust: { long: 43389, short: 5113, net: 38276 }, dealers: { net: -2301 } },
+  { date: '04/08', foreign: { long: 14559, short: 47037, net: -32478 }, trust: { long: 43682, short: 5095, net: 38587 }, dealers: { net: -2156 } },
+  { date: '04/09', foreign: { long: 13893, short: 47292, net: -33399 }, trust: { long: 43910, short: 5020, net: 38890 }, dealers: { net: -2089 } },
+  { date: '04/10', foreign: { long: 13115, short: 47518, net: -34403 }, trust: { long: 44102, short: 4980, net: 39122 }, dealers: { net: -1998 } },
+  { date: '04/13', foreign: { long: 15086, short: 51082, net: -35996 }, trust: { long: 44350, short: 4920, net: 39430 }, dealers: { net: -2102 } },
+  { date: '04/14', foreign: { long: 16327, short: 52991, net: -36664 }, trust: { long: 44580, short: 4850, net: 39730 }, dealers: { net: -2210 } },
+  { date: '04/15', foreign: { long: 16346, short: 53129, net: -36783 }, trust: { long: 44820, short: 4790, net: 40030 }, dealers: { net: -2180 } },
+  { date: '04/16', foreign: { long: 16924, short: 56607, net: -39683 }, trust: { long: 45100, short: 4720, net: 40380 }, dealers: { net: -2050 } },
+  { date: '04/17', foreign: { long: 18245, short: 59396, net: -41151 }, trust: { long: 45380, short: 4680, net: 40700 }, dealers: { net: -1980 } },
+  { date: '04/20', foreign: { long: 18280, short: 60898, net: -42618 }, trust: { long: 45620, short: 4640, net: 40980 }, dealers: { net: -1890 } },
+  { date: '04/21', foreign: { long: 20082, short: 61377, net: -41295 }, trust: { long: 45850, short: 4610, net: 41240 }, dealers: { net: -1820 } },
+  { date: '04/22', foreign: { long: 19557, short: 62112, net: -42555 }, trust: { long: 46080, short: 4590, net: 41490 }, dealers: { net: -1750 } },
+  { date: '04/23', foreign: { long: 18185, short: 62212, net: -44027 }, trust: { long: 46280, short: 4570, net: 41710 }, dealers: { net: -1680 } },
+  { date: '04/24', foreign: { long: 20056, short: 60689, net: -40633 }, trust: { long: 46480, short: 4570, net: 41910 }, dealers: { net: -1620 } },
+  { date: '04/27', foreign: { long: 18523, short: 62746, net: -44223 }, trust: { long: 46620, short: 4568, net: 42052 }, dealers: { net: -1590 } },
+  { date: '04/28', foreign: { long: 17922, short: 63791, net: -45869 }, trust: { long: 46740, short: 4567, net: 42173 }, dealers: { net: -1570 } },
+  { date: '04/29', foreign: { long: 18063, short: 65137, net: -47074 }, trust: { long: 46820, short: 4567, net: 42253 }, dealers: { net: -1555 } },
+  { date: '04/30', foreign: { long: 19569, short: 63613, net: -44044 }, trust: { long: 46884, short: 4567, net: 42317 }, dealers: { net: -1539 } }
+];
+
+// Futures Line Chart (外資多空單趨勢)
+new Chart(document.getElementById('futuresChart'), {
+  type: 'line',
+  data: {
+    labels: futuresData.map(d => d.date),
+    datasets: [
+      {
+        label: '外資多單口數',
+        data: futuresData.map(d => d.foreign.long),
+        borderColor: '#dc2626',
+        backgroundColor: 'rgba(220,38,38,0.08)',
+        borderWidth: 2, fill: false, tension: 0.3, pointRadius: 3
+      },
+      {
+        label: '外資空單口數',
+        data: futuresData.map(d => d.foreign.short),
+        borderColor: '#16a34a',
+        backgroundColor: 'rgba(22,163,74,0.08)',
+        borderWidth: 2, fill: false, tension: 0.3, pointRadius: 3
+      },
+      {
+        label: '外資淨多單',
+        data: futuresData.map(d => d.foreign.net),
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245,158,11,0.08)',
+        borderWidth: 2.5, fill: false, tension: 0.3, pointRadius: 4,
+        borderDash: [5,3]
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: true, position: 'top' } },
+    scales: { y: { title: { display: true, text: '口數' } } }
+  }
+});
+
+// Futures Net Chart (三大法人淨多單比較)
+new Chart(document.getElementById('futuresNetChart'), {
+  type: 'line',
+  data: {
+    labels: futuresData.map(d => d.date),
+    datasets: [
+      {
+        label: '外資淨多單',
+        data: futuresData.map(d => d.foreign.net),
+        borderColor: '#16a34a', borderWidth: 2, fill: false, tension: 0.3, pointRadius: 3
+      },
+      {
+        label: '投信淨多單',
+        data: futuresData.map(d => d.trust.net),
+        borderColor: '#dc2626', borderWidth: 2, fill: false, tension: 0.3, pointRadius: 3
+      },
+      {
+        label: '自營商淨多單',
+        data: futuresData.map(d => d.dealers.net),
+        borderColor: '#2563eb', borderWidth: 2, fill: false, tension: 0.3, pointRadius: 3
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: true, position: 'top' } },
+    scales: { y: { title: { display: true, text: '淨多單口數' } } }
+  }
+});
+
+// Futures Bar Chart (最新日多空單)
+const latestFutures = futuresData[futuresData.length - 1];
+new Chart(document.getElementById('futuresBarChart'), {
+  type: 'bar',
+  data: {
+    labels: ['外資', '投信', '自營商'],
+    datasets: [
+      {
+        label: '多單口數',
+        data: [latestFutures.foreign.long, latestFutures.trust.long, latestFutures.dealers.net > 0 ? latestFutures.dealers.net : 0],
+        backgroundColor: 'rgba(220,38,38,0.75)',
+        borderColor: '#dc2626', borderWidth: 1
+      },
+      {
+        label: '空單口數',
+        data: [latestFutures.foreign.short, latestFutures.trust.short, latestFutures.dealers.net < 0 ? Math.abs(latestFutures.dealers.net) : 0],
+        backgroundColor: 'rgba(22,163,74,0.75)',
+        borderColor: '#16a34a', borderWidth: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: true, position: 'top' } },
+    scales: { y: { title: { display: true, text: '口數' } } }
+  }
+});
+
+// Futures Table
+const futuresTableBody = document.getElementById('futuresTable');
+futuresData.forEach((row, idx) => {
+  const tr = document.createElement('tr');
+  if (idx % 2 === 0) tr.style.background = '#f8fafc';
+  const netColor = n => n >= 0 ? '#dc2626' : '#16a34a';
+  const fmt = n => (n >= 0 ? '+' : '') + n.toLocaleString();
+  tr.innerHTML = `
+    <td style="padding:7px 10px;font-weight:600">${row.date}</td>
+    <td style="padding:7px 10px;text-align:right;color:#dc2626">${row.foreign.long.toLocaleString()}</td>
+    <td style="padding:7px 10px;text-align:right;color:#16a34a">${row.foreign.short.toLocaleString()}</td>
+    <td style="padding:7px 10px;text-align:right;color:${netColor(row.foreign.net)};font-weight:700">${fmt(row.foreign.net)}</td>
+    <td style="padding:7px 10px;text-align:right;color:#dc2626">${row.trust.long.toLocaleString()}</td>
+    <td style="padding:7px 10px;text-align:right;color:#16a34a">${row.trust.short.toLocaleString()}</td>
+    <td style="padding:7px 10px;text-align:right;color:${netColor(row.trust.net)};font-weight:700">${fmt(row.trust.net)}</td>
+    <td style="padding:7px 10px;text-align:right;color:${netColor(row.dealers.net)};font-weight:700">${fmt(row.dealers.net)}</td>
+  `;
+  futuresTableBody.appendChild(tr);
+});
+
+// ══ Sector Data (族群漲跌) ══
+const sectorData = [
+  { name: '油電燃氣', close: 78.37, change: 2.76, pct: 3.65 },
+  { name: '電機機械', close: 554.86, change: 10.57, pct: 1.94 },
+  { name: '電子零組件', close: 848.61, change: 14.00, pct: 1.68 },
+  { name: '通信網路', close: 239.36, change: 2.74, pct: 1.16 },
+  { name: '玻璌陶瓷', close: 153.63, change: 1.57, pct: 1.03 },
+  { name: '綠能環保', close: 115.29, change: 0.56, pct: 0.49 },
+  { name: '資訊服務', close: 196.12, change: 0.70, pct: 0.36 },
+  { name: '居家生活', close: 97.92, change: -0.11, pct: -0.11 },
+  { name: '貿易百貨', close: 228.76, change: -0.88, pct: -0.38 },
+  { name: '汽車', close: 279.83, change: -1.19, pct: -0.42 },
+  { name: '水泥', close: 123.45, change: -0.55, pct: -0.44 },
+  { name: '電子通路', close: 334.73, change: -1.59, pct: -0.47 },
+  { name: '數位雲端', close: 33.84, change: -0.17, pct: -0.50 },
+  { name: '觀光餐旅', close: 100.41, change: -0.52, pct: -0.52 },
+  { name: '航運', close: 173.59, change: -1.02, pct: -0.58 },
+  { name: '光電', close: 48.27, change: -0.29, pct: -0.60 },
+  { name: '紡織纖維', close: 453.59, change: -3.24, pct: -0.71 },
+  { name: '塑膠', close: 205.65, change: -1.67, pct: -0.81 },
+  { name: '運動休閒', close: 56.00, change: -0.46, pct: -0.81 },
+  { name: '其他電子', close: 256.30, change: -2.28, pct: -0.88 },
+  { name: '橡膠', close: 189.38, change: -1.79, pct: -0.94 },
+  { name: '食品', close: 1870.19, change: -18.71, pct: -0.99 },
+  { name: '電子', close: 2497.52, change: -25.73, pct: -1.02 },
+  { name: '化學', close: 190.73, change: -2.03, pct: -1.05 },
+  { name: '生技醫療', close: 73.93, change: -0.82, pct: -1.10 },
+  { name: '電器電纜', close: 94.90, change: -1.16, pct: -1.21 },
+  { name: '建材營造', close: 452.01, change: -5.92, pct: -1.29 },
+  { name: '金融保險', close: 2478.15, change: -32.79, pct: -1.31 },
+  { name: '造紙', close: 238.30, change: -3.41, pct: -1.41 },
+  { name: '齋鐵', close: 114.29, change: -1.81, pct: -1.56 },
+  { name: '半導體', close: 1301.84, change: -21.95, pct: -1.66 },
+  { name: '電腦週邊', close: 356.76, change: -6.08, pct: -1.68 }
+];
+
+// Sector Bar Chart
+const sectorColors = sectorData.map(s => s.change >= 0 ? 'rgba(220,38,38,0.8)' : 'rgba(22,163,74,0.8)');
+const sectorBorderColors = sectorData.map(s => s.change >= 0 ? '#dc2626' : '#16a34a');
+new Chart(document.getElementById('sectorChart'), {
+  type: 'bar',
+  data: {
+    labels: sectorData.map(s => s.name),
+    datasets: [
+      {
+        label: '漲跌點數',
+        data: sectorData.map(s => s.change),
+        backgroundColor: sectorColors,
+        borderColor: sectorBorderColors,
+        borderWidth: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const s = sectorData[ctx.dataIndex];
+            const sign = s.change >= 0 ? '+' : '';
+            return `漲跌: ${sign}${s.change.toFixed(2)}點  (${sign}${s.pct.toFixed(2)}%)`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: { title: { display: true, text: '漲跌點數' },
+           grid: { color: ctx => ctx.tick.value === 0 ? '#94a3b8' : '#f1f5f9' } }
+    }
+  }
+});
+
+// Bull/Bear Sector Cards
+const bullSectors = sectorData.filter(s => s.change > 0).slice(0, 7);
+const bearSectors = [...sectorData].filter(s => s.change < 0).sort((a,b) => a.pct - b.pct).slice(0, 7);
+
+const bullDiv = document.getElementById('bullSectors');
+bullSectors.forEach(s => {
+  bullDiv.innerHTML += `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #fee2e2">
+      <span style="font-weight:600;color:#1e293b">${s.name}</span>
+      <span style="color:#dc2626;font-weight:700">+${s.change.toFixed(2)}點 &nbsp; +${s.pct.toFixed(2)}%</span>
+    </div>`;
+});
+
+const bearDiv = document.getElementById('bearSectors');
+bearSectors.forEach(s => {
+  bearDiv.innerHTML += `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #dcfce7">
+      <span style="font-weight:600;color:#1e293b">${s.name}</span>
+      <span style="color:#16a34a;font-weight:700">${s.change.toFixed(2)}點 &nbsp; ${s.pct.toFixed(2)}%</span>
+    </div>`;
+});
+
+// Sector Table
+const sectorTableBody = document.getElementById('sectorTable');
+sectorData.forEach((s, idx) => {
+  const tr = document.createElement('tr');
+  if (idx % 2 === 0) tr.style.background = '#f8fafc';
+  const color = s.change >= 0 ? '#dc2626' : '#16a34a';
+  const sign = s.change >= 0 ? '+' : '';
+  const label = s.change >= 0 ? '🔴 多頭' : '🟢 空頭';
+  tr.innerHTML = `
+    <td style="padding:7px 10px;font-weight:600">${s.name}</td>
+    <td style="padding:7px 10px;text-align:right">${s.close.toLocaleString('zh-TW', {minimumFractionDigits:2})}</td>
+    <td style="padding:7px 10px;text-align:right;color:${color};font-weight:700">${sign}${s.change.toFixed(2)}點</td>
+    <td style="padding:7px 10px;text-align:right;color:${color};font-weight:700">${sign}${s.pct.toFixed(2)}%</td>
+    <td style="padding:7px 10px;text-align:center">${label}</td>
+  `;
+  sectorTableBody.appendChild(tr);
+});
+
 </script>
 </body>
 </html>
