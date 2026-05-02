@@ -1,0 +1,42 @@
+name: Update Taiwan Stock Report Daily
+
+on:
+  schedule:
+    # Runs every day at 17:00 (5 PM) GMT+8
+    # Adjust cron expression if a different time is desired
+    - cron: '0 9 * * *' # 9 AM UTC is 5 PM GMT+8
+  workflow_dispatch:
+
+jobs:
+  update-report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Fetch all history for proper commit
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Add any other Python dependencies here if needed, e.g., beautifulsoup4, requests
+
+    - name: Run update script
+      run: python update_report.py
+      working-directory: ./taiwan_stock_report
+
+    - name: Commit and push changes
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add index.html
+        git commit -m "Daily update: Taiwan Stock Report for $(date +'%Y/%m/%d')" || echo "No changes to commit"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is automatically provided by GitHub Actions for repository write access }}
