@@ -1034,6 +1034,7 @@
             <tr>
               <th>日期</th>
               <th>指數</th>
+              <th>漲跌點數</th>
               <th>漲跌%</th>
               <th>外資(億)</th>
               <th>投信(億)</th>
@@ -1281,16 +1282,16 @@ new Chart(document.getElementById('weeklyChart'), {
 
 // ── History Data ──
 const historyData = [
-  { date: '04/17', index: 36720, chg: 1.20, foreign: 310, trust: 28, event: '台積電財報創五新高' },
-  { date: '04/20', index: 36958, chg: 0.65, foreign: 240, trust: 20, event: '盤中攻上37344點新高' },
-  { date: '04/21', index: 38440, chg: 4.01, foreign: 820, trust: 45, event: '股王股后帶頭衝，大漲逾1500點' },
-  { date: '04/22', index: 38663, chg: 0.58, foreign: 155, trust: 12.4, event: '站穩38000點關卡' },
-  { date: '04/23', index: 39108, chg: 1.15, foreign: 340, trust: 30.2, event: '科技股大漲，美股財報激勵' },
-  { date: '04/24', index: 39025, chg: -0.21, foreign: -85, trust: 25, event: '震盪洗盤，融資餘額續增' },
-  { date: '04/27', index: 39345, chg: 0.82, foreign: 210, trust: 18.5, event: 'AI權值股領軍，市場情緒樂觀' },
-  { date: '04/28', index: 39522, chg: 0.45, foreign: 120, trust: 22, event: '指數再創收盤歷史新高' },
-  { date: '04/29', index: 39303, chg: -0.55, foreign: -161, trust: 15.2, event: '高檔震盪，外資轉賣' },
-  { date: '04/30', index: 38926, chg: -0.96, foreign: -535, trust: 11.8, event: '獲利了結，外資連4賣' }
+  { date: '04/17', index: 36720, chg: 1.20, points_change: 0, foreign: 310, trust: 28, event: '台積電財報創五新高' },
+  { date: '04/20', index: 36958, chg: 0.65, points_change: 238, foreign: 240, trust: 20, event: '盤中攻上37344點新高' },
+  { date: '04/21', index: 38440, chg: 4.01, points_change: 1482, foreign: 820, trust: 45, event: '股王股后帶頭衝，大漲逾1500點' },
+  { date: '04/22', index: 38663, chg: 0.58, points_change: 223, foreign: 155, trust: 12.4, event: '站穩38000點關卡' },
+  { date: '04/23', index: 39108, chg: 1.15, points_change: 445, foreign: 340, trust: 30.2, event: '科技股大漲，美股財報激勵' },
+  { date: '04/24', index: 39025, chg: -0.21, points_change: -83, foreign: -85, trust: 25, event: '震盪洗盤，融資餘額續增' },
+  { date: '04/27', index: 39345, chg: 0.82, points_change: 320, foreign: 210, trust: 18.5, event: 'AI權值股領軍，市場情緒樂觀' },
+  { date: '04/28', index: 39522, chg: 0.45, points_change: 177, foreign: 120, trust: 22, event: '指數再創收盤歷史新高' },
+  { date: '04/29', index: 39303, chg: -0.55, points_change: -219, foreign: -161, trust: 15.2, event: '高檔震盪，外資轉賣' },
+  { date: '04/30', index: 38926, chg: -0.96, points_change: -377, foreign: -535, trust: 11.8, event: '獲利了結，外資連4賣' }
 ];
 
 // Populate History Table
@@ -1302,6 +1303,7 @@ historyData.forEach((row, idx) => {
   tr.innerHTML = `
     <td style="padding:8px;font-weight:600">${row.date}</td>
     <td style="padding:8px;text-align:right">${row.index.toLocaleString()}</td>
+    <td style="padding:8px;text-align:right;color:${row.points_change >= 0 ? '#dc2626' : '#16a34a'};font-weight:600">${row.points_change >= 0 ? '+' : ''}${row.points_change.toFixed(0)}</td>
     <td style="padding:8px;text-align:right;color:${row.chg >= 0 ? '#dc2626' : '#16a34a'};font-weight:600">${row.chg >= 0 ? '+' : ''}${row.chg.toFixed(2)}%</td>
     <td style="padding:8px;text-align:right;color:${row.foreign >= 0 ? '#dc2626' : '#16a34a'};font-weight:600">${row.foreign >= 0 ? '+' : ''}${row.foreign.toFixed(0)}</td>
     <td style="padding:8px;text-align:right;color:${row.trust >= 0 ? '#dc2626' : '#16a34a'};font-weight:600">${row.trust >= 0 ? '+' : ''}${row.trust.toFixed(1)}</td>

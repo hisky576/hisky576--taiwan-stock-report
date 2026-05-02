@@ -156,20 +156,19 @@ def update_html_content(html_path, data):
         foreign_color = '#dc2626' if row['foreign'] >= 0 else '#16a34a'
         trust_color = '#dc2626' if row['trust'] >= 0 else '#16a34a'
         history_table_rows.append(f'''
-            <td style="padding:8px;font-weight:600">{row['date']}</td>
-            <td style="padding:8px;text-align:right">{row['index'].toLocaleString()}</td>
-            <td style="padding:8px;text-align:right;color:{chg_color};font-weight:600">{'+' if row['chg'] >= 0 else ''}{row['chg']:.2f}%</td>
-            <td style="padding:8px;text-align:right;color:{foreign_color};font-weight:600">{'+' if row['foreign'] >= 0 else ''}{row['foreign']:.0f}</td>
-            <td style="padding:8px;text-align:right;color:{trust_color};font-weight:600">{'+' if row['trust'] >= 0 else ''}{row['trust']:.1f}</td>
+            <td style="padding:8px;font-weight:600">{row["date"]}</td>
+            <td style="padding:8px;text-align:right">{row["index"]}</td>
+            <td style="padding:8px;text-align:right;color:{chg_color};font-weight:600">{'+\'' if row['points_change'] >= 0 else ''}{row['points_change']:.0f}</td>
+            <td style="padding:8px;text-align:right;color:{chg_color};font-weight:600">{'+\'' if row['chg'] >= 0 else ''}{row['chg']:.2f}%</td>
+            <td style="padding:8px;text-align:right;color:{foreign_color};font-weight:600">{'+\'' if row['foreign'] >= 0 else ''}{row['foreign']:.0f}</td>
+            <td style="padding:8px;text-align:right;color:{trust_color};font-weight:600">{'+\'' if row['trust'] >= 0 else ''}{row['trust']:.1f}</td>
             <td style="padding:8px;font-size:11px;color:#64748b">{row['event']}</td>
         ''')
-    history_table_html = ''.join([f'<tr style="border-bottom:1px solid #e2e8f0;background:{
-idx % 2 == 0 ? \'#ffffff\' : \'transparent\'}">\n  {row_html}\n</tr>
-
-'.format(row_html=row_html)) for idx, row_html in enumerate(history_table_rows)])
-    html_content = re.sub(r'(<tbody id="historyTable">)[\s\S]*?(</tbody>)', f'\1{
-history_table_html}\2
-
+    history_table_html = ''.join([
+        f'<tr style="border-bottom:1px solid #e2e8f0;background:{'#ffffff' if idx % 2 == 0 else 'transparent'}">\n{row_html}\n</tr>'
+        for idx, row_html in enumerate(history_table_rows)
+    ])
+    html_content = re.sub(r'(<tbody id="historyTable">)[\s\S]*?(</tbody>)', f'\1{history_table_html}\2', html_content)
 
     # Update Chart.js data for history charts
     history_labels = [f'\'{d["date"]}\' for d in data["history_data"]]
