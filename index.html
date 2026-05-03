@@ -2143,10 +2143,11 @@ function openSectorModal(sectorName, sectorChange, sectorPct) {
       const bg = s.direction === 'up' ? '#fff5f5' : s.direction === 'down' ? '#f0fdf4' : '#f8fafc';
       const badge = s.direction === 'up' ? '🔴 多' : s.direction === 'down' ? '🟢 空' : '⬜ 平';
       const badgeBg = s.direction === 'up' ? '#dc2626' : s.direction === 'down' ? '#16a34a' : '#94a3b8';
+      const goodinfoUrl = `https://goodinfo.tw/tw/StockDetail.asp?STOCK_ID=${s.code}`;
       tableHtml += `
         <tr style="background:${bg}">
-          <td style="font-weight:600;color:#1e293b">${s.code}</td>
-          <td style="font-weight:600">${s.name}</td>
+          <td style="font-weight:600;color:#1d4ed8"><a href="${goodinfoUrl}" target="_blank" style="color:#1d4ed8;text-decoration:underline;cursor:pointer">${s.code}↗</a></td>
+          <td style="font-weight:600"><a href="${goodinfoUrl}" target="_blank" style="color:#1e293b;text-decoration:underline;cursor:pointer">${s.name}↗</a></td>
           <td style="text-align:right;font-weight:600">${s.close}</td>
           <td style="text-align:right;color:${color};font-weight:700">${s.change}</td>
           <td style="text-align:center"><span style="background:${badgeBg};color:#fff;border-radius:4px;padding:2px 8px;font-size:11px">${badge}</span></td>
