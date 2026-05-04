@@ -2,8 +2,7 @@ name: Update Taiwan Stock Report Daily
 
 on:
   schedule:
-    # Runs every day at 17:00 (5 PM) GMT+8
-    - cron: '0 9 * * *' # 9 AM UTC is 5 PM GMT+8
+    - cron: '0 9 * * *'
   workflow_dispatch:
 
 jobs:
