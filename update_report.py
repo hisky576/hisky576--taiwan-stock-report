@@ -1,117 +1,330 @@
-import json
+"""
+台股每日報告自動更新腳本
+每日從 TWSE 官方 API 抓取真實數據並更新 index.html
+"""
 import re
+import json
+import requests
 from datetime import datetime, timedelta
 
-def fetch_latest_data():
-    """
-    模擬抓取最新市場數據。
-    實際部署時可替換為真實 API 呼叫。
-    """
-    print("Fetching latest data...")
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Referer': 'https://www.twse.com.tw/'
+}
 
-    # 取得今日日期
+
+def get_latest_trading_date():
+    """取得最近交易日（跳過週末）"""
     today = datetime.now()
-    # 若為週末則回退到週五
-    if today.weekday() == 5:  # 週六
-        today = today - timedelta(days=1)
-    elif today.weekday() == 6:  # 週日
-        today = today - timedelta(days=2)
-
-    date_str = today.strftime('%Y/%m/%d')
-
-    latest_data = {
-        "date": date_str,
-        "index": 39100,
-        "index_chg_points": 173,
-        "index_chg_percent": 0.44,
-        "month_chg_points": 7376,
-        "month_chg_percent": 23.2,
-        "trade_value": "1.05兆",
-        "foreign_sell": 250,
-        "foreign_sell_days": 1,
-        "trust_buy": 15,
-        "trust_buy_days": 9,
-        "tsmc_price": 2150,
-        "tsmc_chg_points": 15,
-        "tsmc_chg_percent": 0.70,
-        "q1_profit": "1.55兆",
-        "q1_profit_target": "6兆",
-        "sentiment": {
-            "basic": 85,
-            "chip": 35,
-            "tech": 50,
-            "fund": 65,
-            "theme": 80
-        },
-        "bull_factors": [
-            "企業獲利持續成長，Q1表現優於預期",
-            "AI需求旺盛，相關供應鏈訂單滿載",
-            "ETF資金持續流入，提供市場流動性",
-            "520行情與Computex題材持續發酵",
-            "國際資金對台灣科技股仍具信心"
-        ],
-        "bear_factors": [
-            "外資持續調節大型權值股，賣壓未止",
-            "技術面指標高檔鈍化，短線修正壓力大",
-            "全球通膨壓力未解，升息預期影響資金",
-            "地緣政治風險仍存，影響投資人信心",
-            "新台幣貶值壓力，外資匯出意願高"
-        ],
-        "support": 38000,
-        "resistance": 40000,
-        "target_near": 41500,
-        "target_optimistic": 43500,
-        "hot_stocks": [
-            {"name": "台積電 2330", "status": "neutral", "event": "Q1財報亮眼，但外資持續調節"},
-            {"name": "聯電 2303", "status": "buy", "event": "股東會利多，外資持續買超"},
-            {"name": "聯發科 2454", "status": "buy", "event": "AI ASIC目標翻倍，獲利成長"},
-            {"name": "日月光 3711", "status": "buy", "event": "AI封測龍頭，目標價上調"},
-            {"name": "南亞科 2408", "status": "sell", "event": "HBM需求強勁，但外資大幅調節"}
-        ],
-        "history_data": [
-            {"date": "04/22", "index": 38663, "chg": 0.58, "foreign": 155, "trust": 12.4, "event": "站穩38000點關卡"},
-            {"date": "04/23", "index": 39108, "chg": 1.15, "foreign": 340, "trust": 30.2, "event": "科技股大漲，美股財報激勵"},
-            {"date": "04/24", "index": 39025, "chg": -0.21, "foreign": -85, "trust": 25, "event": "震盪洗盤，融資餘額續增"},
-            {"date": "04/25", "index": 39150, "chg": 0.32, "foreign": 50, "trust": 18, "event": "區間震盪，等待方向"},
-            {"date": "04/26", "index": 39280, "chg": 0.33, "foreign": 80, "trust": 20, "event": "小幅上漲，量能溫和"},
-            {"date": "04/27", "index": 39345, "chg": 0.82, "foreign": 210, "trust": 18.5, "event": "AI權值股領軍，市場情緒樂觀"},
-            {"date": "04/28", "index": 39522, "chg": 0.45, "foreign": 120, "trust": 22, "event": "指數再創收盤歷史新高"},
-            {"date": "04/29", "index": 39303, "chg": -0.55, "foreign": -161, "trust": 15.2, "event": "高檔震盪，外資轉賣"},
-            {"date": "04/30", "index": 38926, "chg": -0.96, "foreign": -535, "trust": 11.8, "event": "獲利了結，外資連4賣"},
-            {"date": "05/02", "index": 39100, "chg": 0.44, "foreign": 250, "trust": 15, "event": "AI概念股反彈，指數小漲"}
-        ]
-    }
-    return latest_data
+    # 若今天是週六，回退到週五
+    if today.weekday() == 5:
+        today -= timedelta(days=1)
+    # 若今天是週日，回退到週五
+    elif today.weekday() == 6:
+        today -= timedelta(days=2)
+    return today
 
 
-def update_html_content(html_path, data):
-    """讀取 index.html 並更新日期標題"""
+def fetch_taiex_data():
+    """抓取加權指數當日數據"""
+    try:
+        url = 'https://www.twse.com.tw/rwd/zh/TAIEX/MI_5MINS_HIST?response=json'
+        r = requests.get(url, headers=HEADERS, timeout=15)
+        data = r.json()
+        if data.get('data'):
+            rows = data['data']
+            latest = rows[-1]  # 最新一筆
+            # 格式: ['115/05/04', '39,228.39', '40,755.52', '39,228.39', '40,705.14']
+            date_str = latest[0]  # 民國年
+            closing = float(latest[4].replace(',', ''))
+            opening = float(latest[1].replace(',', ''))
+
+            # 轉換民國年為西元年
+            parts = date_str.split('/')
+            year = int(parts[0]) + 1911
+            month = int(parts[1])
+            day = int(parts[2])
+            date_formatted = f"{year}/{month:02d}/{day:02d}"
+
+            # 取得前一日收盤
+            prev_close = None
+            if len(rows) >= 2:
+                prev_close = float(rows[-2][4].replace(',', ''))
+            else:
+                # 本月只有一筆，抓上個月最後一日
+                try:
+                    prev_month = month - 1 if month > 1 else 12
+                    prev_year = year if month > 1 else year - 1
+                    prev_date = f"{prev_year}{prev_month:02d}01"
+                    url2 = f'https://www.twse.com.tw/rwd/zh/TAIEX/MI_5MINS_HIST?response=json&date={prev_date}'
+                    r2 = requests.get(url2, headers=HEADERS, timeout=15)
+                    data2 = r2.json()
+                    if data2.get('data'):
+                        prev_close = float(data2['data'][-1][4].replace(',', ''))
+                        rows = data2['data'] + rows  # 合併歷史
+                except Exception as e2:
+                    print(f"上月數據 API 錯誤: {e2}")
+
+            chg_points = round(closing - prev_close, 2) if prev_close else 0
+            chg_percent = round(chg_points / prev_close * 100, 2) if prev_close else 0
+
+            print(f"加權指數: {closing} ({chg_points:+.2f}, {chg_percent:+.2f}%)")
+            return {
+                'date': date_formatted,
+                'closing': closing,
+                'opening': opening,
+                'chg_points': chg_points,
+                'chg_percent': chg_percent,
+                'history': rows
+            }
+    except Exception as e:
+        print(f"加權指數 API 錯誤: {e}")
+    return None
+
+
+def fetch_institutional_data():
+    """抓取三大法人買賣超彙總"""
+    try:
+        url = 'https://www.twse.com.tw/rwd/zh/fund/BFI82U?response=json'
+        r = requests.get(url, headers=HEADERS, timeout=15)
+        data = r.json()
+        if data.get('stat') == 'OK' or data.get('data'):
+            result = {
+                'foreign_net': 0,
+                'trust_net': 0,
+                'dealer_net': 0,
+                'total_net': 0
+            }
+            for row in data.get('data', []):
+                name = row[0]
+                # 買賣差額（元）
+                net_str = row[3].replace(',', '').replace('+', '')
+                try:
+                    net_val = int(net_str)
+                except:
+                    net_val = 0
+
+                if '外資及陸資(不含外資自營商)' in name:
+                    result['foreign_net'] = net_val
+                elif '投信' in name and '自營商' not in name:
+                    result['trust_net'] = net_val
+                elif '自營商(自行買賣)' in name:
+                    result['dealer_net'] = net_val
+                elif '合計' in name:
+                    result['total_net'] = net_val
+
+            # 轉換為億元
+            result['foreign_net_yi'] = round(result['foreign_net'] / 1e8, 2)
+            result['trust_net_yi'] = round(result['trust_net'] / 1e8, 2)
+            result['dealer_net_yi'] = round(result['dealer_net'] / 1e8, 2)
+            result['total_net_yi'] = round(result['total_net'] / 1e8, 2)
+
+            print(f"外資: {result['foreign_net_yi']:+.2f}億, 投信: {result['trust_net_yi']:+.2f}億")
+            return result
+    except Exception as e:
+        print(f"三大法人 API 錯誤: {e}")
+    return None
+
+
+def fetch_tsmc_data():
+    """抓取台積電（2330）當日數據"""
+    try:
+        url = 'https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?stockNo=2330&response=json'
+        r = requests.get(url, headers=HEADERS, timeout=15)
+        data = r.json()
+        if data.get('data'):
+            latest = data['data'][-1]
+            # ['115/05/04', '成交股數', '成交金額', '開盤價', '最高價', '最低價', '收盤價', '漲跌價差', '成交筆數', '註記']
+            closing = float(latest[6].replace(',', ''))
+            chg_str = latest[7].replace(',', '')
+            chg = float(chg_str) if chg_str not in ['--', ''] else 0
+            chg_percent = round(chg / (closing - chg) * 100, 2) if (closing - chg) != 0 else 0
+            print(f"台積電: {closing} ({chg:+.2f}, {chg_percent:+.2f}%)")
+            return {
+                'price': closing,
+                'chg': chg,
+                'chg_percent': chg_percent
+            }
+    except Exception as e:
+        print(f"台積電 API 錯誤: {e}")
+    return None
+
+
+def fetch_trade_value():
+    """抓取大盤成交值"""
+    try:
+        url = 'https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?response=json'
+        r = requests.get(url, headers=HEADERS, timeout=15)
+        data = r.json()
+        for t in data.get('tables', []):
+            if t and t.get('fields') and '成交金額' in str(t.get('fields', [])):
+                total = 0
+                for row in t.get('data', []):
+                    if '一般股票' in row[0] or 'ETF' in row[0]:
+                        try:
+                            total += int(row[1].replace(',', ''))
+                        except:
+                            pass
+                if total > 0:
+                    yi = round(total / 1e12, 2)
+                    print(f"成交值: {yi}兆")
+                    return f"{yi}兆"
+    except Exception as e:
+        print(f"成交值 API 錯誤: {e}")
+    return None
+
+
+def build_taiex_history(taiex_data):
+    """建立近10日指數歷史"""
+    if not taiex_data or not taiex_data.get('history'):
+        return []
+
+    rows = taiex_data['history']
+    result = []
+    prev_close = None
+
+    for row in rows[-10:]:
+        date_str = row[0]  # 民國年 115/05/04
+        closing = float(row[4].replace(',', ''))
+        parts = date_str.split('/')
+        month = int(parts[1])
+        day = int(parts[2])
+        label = f"{month:02d}/{day:02d}"
+
+        chg = round(closing - prev_close, 2) if prev_close else 0
+        chg_pct = round(chg / prev_close * 100, 2) if prev_close else 0
+
+        result.append({
+            'date': label,
+            'index': int(closing),
+            'chg': chg_pct,
+            'event': ''
+        })
+        prev_close = closing
+
+    return result
+
+
+def update_html(html_path, taiex, institutional, tsmc, trade_value):
+    """更新 index.html 的關鍵數據"""
     with open(html_path, 'r', encoding='utf-8') as f:
-        html_content = f.read()
+        content = f.read()
 
-    # 更新標題日期
-    html_content = re.sub(
+    date_str = taiex['date'] if taiex else datetime.now().strftime('%Y/%m/%d')
+    today_date = datetime.strptime(date_str, '%Y/%m/%d').strftime('%Y年%m月%d日')
+
+    # 1. 更新標題日期
+    content = re.sub(
         r'台股每日利多利空統整報告 \| \d{4}/\d{2}/\d{2}',
-        '台股每日利多利空統整報告 | ' + data['date'],
-        html_content
+        '台股每日利多利空統整報告 | ' + date_str,
+        content
     )
-
-    # 更新資料截至日期
-    today_date = datetime.strptime(data['date'], '%Y/%m/%d').strftime('%Y年%m月%d日')
-    html_content = re.sub(
+    # 更新 subtitle 日期（格式: 2026年5月1日 ｜ 資料截至 4月30日收盤）
+    content = re.sub(
+        r'\d{4}年\d{1,2}月\d{1,2}日 ｜ 資料截至 \d{1,2}月30日收盤',
+        today_date + ' ｜ 資料截至 ' + today_date + '收盤',
+        content
+    )
+    # 更新其他格式的資料截至
+    content = re.sub(
         r'資料截至 \d{4}年\d{2}月\d{2}日收盤',
         '資料截至 ' + today_date + '收盤',
-        html_content
+        content
     )
 
-    with open(html_path, 'w', encoding='utf-8') as f:
-        f.write(html_content)
+    # 2. 更新加權指數
+    if taiex:
+        idx = int(taiex['closing'])
+        idx_fmt = f"{idx:,}"
+        chg_pts = taiex['chg_points']
+        chg_pct = taiex['chg_percent']
+        arrow = '▲' if chg_pts >= 0 else '▼'
+        chg_class = 'up' if chg_pts >= 0 else 'down'
+        chg_color = '#dc2626' if chg_pts >= 0 else '#16a34a'
 
-    print("HTML title and date updated successfully.")
+        # 更新指數數值
+        content = re.sub(
+            r'(<div class="label">加權指數</div>\s*<div class="val">)[\d,]+(</div>)',
+            r'\g<1>' + idx_fmt + r'\2',
+            content
+        )
+        # 更新漲跌（匹配加權指數後面的 chg div）
+        new_chg_div = f'<div class="chg {chg_class}">{arrow} {abs(chg_pts):.2f} ({abs(chg_pct):.2f}%)</div>'
+        content = re.sub(
+            r'(<div class="label">加權指數</div>\s*<div class="val">[\d,]+</div>\s*)<div class="chg (?:up|down)">[^<]*</div>',
+            r'\g<1>' + new_chg_div,
+            content
+        )
+
+    # 3. 更新台積電
+    if tsmc:
+        price = int(tsmc['price'])
+        chg = tsmc['chg']
+        chg_pct = tsmc['chg_percent']
+        arrow = '▲' if chg >= 0 else '▼'
+        chg_class = 'bull' if chg >= 0 else 'neutral'
+
+        # 更新台積電收盤價
+        content = re.sub(
+            r'(台積電收盤</div>\s*<div class="stat-value">)[\d,]+(</div>)',
+            r'\g<1>' + f'{price:,}' + r'\2',
+            content
+        )
+        # 更新台積電漲跌
+        content = re.sub(
+            r'(台積電收盤</div>\s*<div class="stat-value">[\d,]+</div>\s*<div class="stat-sub">)[^<]+(</div>)',
+            r'\g<1>' + f'{arrow} {abs(chg):.0f}元 ({abs(chg_pct):.2f}%)' + r'\2',
+            content
+        )
+
+    # 4. 更新外資買賣超
+    if institutional:
+        foreign = institutional['foreign_net_yi']
+        trust = institutional['trust_net_yi']
+        label = '外資買超（本周）' if foreign >= 0 else '外資賣超（本周）'
+        arrow_f = '▲買超' if foreign >= 0 else '▼賣超'
+
+        # 更新外資買賣超金額（不管標籤是買超還是賣超）
+        content = re.sub(
+            r'(外資(?:買超|賣超)（本周）</div>\s*<div class="stat-value">)[\d,]+億',
+            r'\g<1>' + f'{abs(foreign):.0f}億',
+            content
+        )
+        # 更新外資買賣超子標題
+        content = re.sub(
+            r'(外資(?:買超|賣超)（本周）</div>\s*<div class="stat-value">[\d,]+億</div>\s*<div class="stat-sub">)連續\d+日(?:買超|賣超)',
+            r'\g<1>' + f'連續1日{arrow_f}',
+            content
+        )
+
+    # 5. 更新成交值
+    if trade_value:
+        content = re.sub(
+            r'(<div class="label">成交值</div>\s*<div class="val">)[^<]+(</div>)',
+            r'\g<1>' + trade_value + r'\2',
+            content
+        )
+
+    with open(html_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+
+    print(f"HTML 更新完成：{date_str}")
 
 
 if __name__ == "__main__":
-    html_file_path = "index.html"
-    latest_data = fetch_latest_data()
-    update_html_content(html_file_path, latest_data)
-    print("Report updated successfully for " + latest_data['date'])
+    print("=" * 50)
+    print("台股每日報告更新腳本")
+    print("=" * 50)
+
+    # 抓取數據
+    taiex = fetch_taiex_data()
+    institutional = fetch_institutional_data()
+    tsmc = fetch_tsmc_data()
+    trade_value = fetch_trade_value()
+
+    # 更新 HTML
+    update_html("index.html", taiex, institutional, tsmc, trade_value)
+
+    print("=" * 50)
+    print("更新完成！")
