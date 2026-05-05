@@ -298,12 +298,94 @@ def update_html(html_path, taiex, institutional, tsmc, trade_value):
             content
         )
 
-    # 5. 更新成交值
+    # 5. 更新成交値
     if trade_value:
         content = re.sub(
-            r'(<div class="label">成交值</div>\s*<div class="val">)[^<]+(</div>)',
+            r'(<div class="label">成交値</div>\s*<div class="val">)[^<]+(</div>)',
             r'\g<1>' + trade_value + r'\2',
             content
+        )
+
+    # 6. 更新跑馬燈
+    if taiex:
+        idx_fmt = f"{int(taiex['closing']):,}"
+        chg_pts = taiex['chg_points']
+        chg_pct = taiex['chg_percent']
+        arrow = '▲' if chg_pts >= 0 else '▼'
+        chg_class = 'up' if chg_pts >= 0 else 'down'
+        ticker_taiex = (
+            f'<span class="ticker-item">'
+            f'<span class="name">加權指數</span>'
+            f'<span class="price">{idx_fmt}</span>'
+            f'<span class="chg {chg_class}">{arrow} {abs(chg_pts):.2f} ({abs(chg_pct):.2f}%)</span>'
+            f'</span>'
+        )
+        content = re.sub(
+            r'<span class="ticker-item"><span class="name">加權指數</span><span class="price">[\d,]+</span><span class="chg (?:up|down)">[^<]*</span></span>',
+            ticker_taiex,
+            content,
+            flags=re.DOTALL
+        )
+
+    if tsmc:
+        price = int(tsmc['price'])
+        chg = tsmc['chg']
+        chg_pct_t = tsmc['chg_percent']
+        arrow_t = '▲' if chg >= 0 else '▼'
+        chg_class_t = 'up' if chg >= 0 else 'down'
+        ticker_tsmc = (
+            f'<span class="ticker-item">'
+            f'<span class="name">台積電 2330</span>'
+            f'<span class="price">{price:,}</span>'
+            f'<span class="chg {chg_class_t}">{arrow_t} {abs(chg):.0f} ({abs(chg_pct_t):.2f}%)</span>'
+            f'</span>'
+        )
+        content = re.sub(
+            r'<span class="ticker-item"><span class="name">台積電 2330</span><span class="price">[\d,]+</span><span class="chg (?:up|down)">[^<]*</span></span>',
+            ticker_tsmc,
+            content,
+            flags=re.DOTALL
+        )
+
+    if institutional:
+        foreign = institutional['foreign_net_yi']
+        trust = institutional['trust_net_yi']
+        total = institutional.get('total_net_yi', foreign + trust)
+
+        # 跑馬燈三大法人合計
+        arrow_total = '▲' if total >= 0 else '▼'
+        chg_class_total = 'up' if total >= 0 else 'down'
+        action_total = '買超' if total >= 0 else '賣超'
+        ticker_total = (
+            f'<span class="ticker-item">'
+            f'<span class="name">三大法人</span>'
+            f'<span class="price">合計</span>'
+            f'<span class="chg {chg_class_total}">{arrow_total} {action_total}{abs(total):.2f}億</span>'
+            f'</span>'
+        )
+        content = re.sub(
+            r'<span class="ticker-item"><span class="name">三大法人</span><span class="price">合計</span><span class="chg (?:up|down)">[^<]*</span></span>',
+            ticker_total,
+            content,
+            flags=re.DOTALL
+        )
+
+        # 跑馬燈外資本周
+        arrow_f = '▲' if foreign >= 0 else '▼'
+        chg_class_f = 'up' if foreign >= 0 else 'down'
+        action_f = '買超' if foreign >= 0 else '賣超'
+        ticker_foreign = (
+            f'<span class="ticker-item">'
+            f'<span class="name">外資本周</span>'
+            f'<span class="price">動向</span>'
+            f'<span class="chg {chg_class_f}">{arrow_f} {action_f}{abs(foreign):.2f}億元</span>'
+            f'</span>'
+        )
+        content = re.sub(
+            r'<span class="ticker-item"><span class="name">外資本周</span><span class="price">(?:提款|動向)</span><span class="chg (?:up|down)">[^<]*</span></span>',
+            ticker_foreign,
+            content,
+            flags=re.DOTALL
         )
 
     with open(html_path, 'w', encoding='utf-8') as f:
