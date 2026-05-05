@@ -298,11 +298,30 @@ def update_html(html_path, taiex, institutional, tsmc, trade_value):
             content
         )
 
-    # 5. 更新成交値
+    # 5. 更新成交值
     if trade_value:
+        # 更新成交值數值
         content = re.sub(
-            r'(<div class="label">成交値</div>\s*<div class="val">)[^<]+(</div>)',
+            r'(<div class="label">成交值</div>\s*<div class="val">)[^<]+(</div>)',
             r'\g<1>' + trade_value + r'\2',
+            content
+        )
+        # 更新成交值副標題（如 4/30 成交值 → 今日成交值）
+        today_mmdd = datetime.strptime(date_str, '%Y/%m/%d').strftime('%-m/%-d')
+        content = re.sub(
+            r'(<div class="chg"[^>]*>)\d{1,2}/\d{1,2} 成交值(</div>)',
+            r'\g<1>' + today_mmdd + r' 成交值\2',
+            content
+        )
+
+    # 5b. 更新投信副標題
+    if institutional:
+        trust = institutional['trust_net_yi']
+        today_mmdd = datetime.strptime(date_str, '%Y/%m/%d').strftime('%-m/%-d')
+        arrow_t2 = '買超' if trust >= 0 else '賣超'
+        content = re.sub(
+            r'(投信買超（連續）</div>\s*<div class="stat-value">[^<]+</div>\s*<div class="stat-sub">)\d{1,2}/\d{1,2} (?:買超|賣超)[\d.]+億',
+            r'\g<1>' + today_mmdd + f' {arrow_t2}{abs(trust):.2f}億',
             content
         )
 
